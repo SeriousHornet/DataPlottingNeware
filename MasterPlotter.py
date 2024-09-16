@@ -436,6 +436,5 @@ plot_data.reset_index(drop=True, inplace=True)
 
 # Now 'plot_data' contains the filtered and selected data based on Cycle Index and Step Type
 print(plot_data)
-
 print("Finished")
 #################################### Testing Bay ##########################################
