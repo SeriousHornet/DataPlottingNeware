@@ -1,12 +1,17 @@
 #  Import List
+from ast import parse
+from multiprocessing.managers import Value
+
 import matplotlib.pyplot as plt
 from itertools import cycle
 import pandas as pd
 import numpy as np
 import os
 import re
+import warnings
 
 #
+warnings.simplefilter("ignore", category=UserWarning)
 pd.options.mode.chained_assignment = None
 
 # Declaring Variables
@@ -14,27 +19,35 @@ filename, excel_data, cellno= None, None, None  # Electrode_Weight, Active_Mater
 FMN, RPF, CYC = None, None, None  # Formation, Rate Profile, Long Cycle
 AC, Fresh, AFFM, AFCY, cell_state, title = None, None, None, None, None, None # AC File, Fresh cell, After Formation, After Long Cycle
 
+
 # functions #
 
 # Getting the file input from user
-def get_file():
+def file():
     global filename
-    raw_xlsx_file = input("Enter the path of the file: ")
-    path = raw_xlsx_file.strip(' " " ')
+    raw_path = input("Enter the path of the file: ")
+    path = raw_path.strip(' " " ')
     filename = str(os.path.basename(path).split('/'))
 
-    get_file.xlsx_file = path
+    file.path = path
 
-    csv, CSV, txt, xlsx = ".csv" in get_file.xlsx_file, ".CSV" in get_file.xlsx_file, ".txt" in get_file.xlsx_file, ".xlsx" in get_file.xlsx_file
+    csv, CSV, txt, xlsx = ".csv" in file.path, ".CSV" in file.path, ".txt" in file.path, ".xlsx" in file.path
     if txt or csv or CSV or xlsx:
         pass
     else:
-        get_file.xlsx_file += ".csv"
+        file.path += ".csv"
     return
 # Creating dataframes for each Excel sheet
-def parse_excel():
+def parse_excel(path, sheets):
     global excel_data
-    excel_data = pd.ExcelFile(filename)
+    excel_data = pd.ExcelFile(path)
+    dataframes = {}
+    for i in sheets:
+        try:
+            dataframes[i] = pd.read_excel(path, engine="openpyxl", sheet_name=i)
+        except ValueError:
+            print(f"Warning: Sheet {i} not found in the file.")
+    return dataframes
 
 # Removing the unnecessary zeros from ACTION and ACCMAH
 def rest_remover(src_df):
@@ -357,7 +370,12 @@ def cell_state():
 #################################### Run of Events Ends Here ##########################################
 #################################### Testing Bay ##########################################
 print("Started..")
-get_file()
-print(filename)
-
+file()
+print(file.path)
+sheets4plot = ['cycle', 'step', 'record']
+work_frames = parse_excel(file.path, sheets4plot)
+for sheet, df in work_frames.items():
+    print(f"Sheet name: {sheet}")
+    print(df.head())
+print("Finished")
 #################################### Testing Bay ##########################################
