@@ -1,7 +1,4 @@
 #  Import List
-from ast import parse
-from multiprocessing.managers import Value
-
 import matplotlib.pyplot as plt
 from itertools import cycle
 import pandas as pd
@@ -15,9 +12,9 @@ warnings.simplefilter("ignore", category=UserWarning)
 pd.options.mode.chained_assignment = None
 
 # Declaring Variables
-filename, excel_data, cellno= None, None, None  # Electrode_Weight, Active_Material_Weight, Excel File Name, cell number variables, actual cell number
+filename, excel_data, cellno = None, None, None  # Electrode_Weight, Active_Material_Weight, Excel File Name, cell number variables, actual cell number
 FMN, RPF, CYC = None, None, None  # Formation, Rate Profile, Long Cycle
-AC, Fresh, AFFM, AFCY, cell_state, title = None, None, None, None, None, None # AC File, Fresh cell, After Formation, After Long Cycle
+AC, Fresh, AFFM, AFCY, cell_state, title = None, None, None, None, None, None  # AC File, Fresh cell, After Formation, After Long Cycle
 
 
 # functions #
@@ -25,7 +22,8 @@ AC, Fresh, AFFM, AFCY, cell_state, title = None, None, None, None, None, None # 
 # Getting the file input from user
 def file():
     global filename
-    raw_path = input("Enter the path of the file: ")
+    # raw_path = input("Enter the path of the file: ")
+    raw_path = r'"C:\Users\Mano-BRCGE\Desktop\NeWare Data\20240905-Oven-Com-LiDFP\240905-C01-CNCMA90-LiDFOB+LiDFP-0.01144-0.1C.xlsx"'
     path = raw_path.strip(' " " ')
     filename = str(os.path.basename(path).split('/'))
 
@@ -37,6 +35,8 @@ def file():
     else:
         file.path += ".csv"
     return
+
+
 # Creating dataframes for each Excel sheet
 def parse_excel(path, sheets):
     global excel_data
@@ -49,20 +49,44 @@ def parse_excel(path, sheets):
             print(f"Warning: Sheet {i} not found in the file.")
     return dataframes
 
+
 # Removing the unnecessary zeros from ACTION and ACCMAH
 def rest_remover(src_df):
-    search_0 = [0]
-    only_zeros = (src_df[' ACTION'].isin(search_0)) | (src_df[' ACCMAH'].isin(search_0))
-    src_df = src_df.loc[~only_zeros]
+    search_rest = ['Rest']
+    only_rest = (src_df['Step Type'].isin(search_rest))
+    src_df = src_df.loc[~only_rest]
     return src_df
 
 
-# Calculating Specific Capacity and adding it as a column named 'ACCMAHG'
-def cap_calc(df):
-    global a_m_w
-    df[' ACCMAHG'] = (df[' ACCMAH'] / a_m_w).__round__(2)
-    df[' VOLTS'] = (df[' VOLTAGE'] / 1000)
+# Converting capacity from Ah to mAh and add it to a new column named 'Chg. Cap.(mAH)' and 'DChg. Cap.(mAh)'
+def conv_Ah_to_mAh(df):
+    df['Chg. Cap.(mAh)'] = (df['Chg. Cap.(Ah)'] / 1000).__round__(4)
+    df['DChg. Cap.(mAh)'] = (df['DChg. Cap.(Ah)'] / 1000).__round__(4)
     return df
+
+
+# Function to filter and select specific columns
+def filter_trim(df, filters, XY):
+    """
+    Filters a dataframe based on specified conditions and selects certain columns.
+
+    Parameters:
+    - df (DataFrame): The original dataframe to filter.
+    - filters (dict): A dictionary where keys are column names and values are the filter values.
+    - XY (list): A list of columns to select from the filtered data.
+
+    Returns:
+    - DataFrame: The filtered and selected dataframe.
+    """
+    # Apply filters based on the provided conditions
+    filtered_df = df.copy()  # Copy the original DataFrame to avoid modifying it
+    for column, value in filters.items():
+        filtered_df = filtered_df[filtered_df[column] == value]
+
+    # Select the specified columns
+    selected_df = filtered_df[XY]
+
+    return selected_df
 
 
 # Getting plot choice form user
@@ -128,7 +152,7 @@ def rpf_step_plotter(src_df):
     CE_file_check()
 
     global a_m_w
-    
+
     src_df['Acc mAHg'] = (src_df['Acc mAH'] / a_m_w).round(2)
     dschg_bool = (src_df['Action'].isin(['Discharge']))
     dschg = src_df.loc[dschg_bool]
@@ -166,7 +190,7 @@ def cyc_plotter(src_df):
                          marker='o')
     ax1.tick_params(axis='y', labelcolor='blue')
     ax1.set_ylim(0, 200)
-    #ax1.set_xlim(0, 200)
+    # ax1.set_xlim(0, 200)
 
     ax2 = ax1.twinx()
     ax2.set_ylabel("Coulombic Efficiency (%)", color='red')
@@ -199,11 +223,12 @@ def acimp_plotter(raw_df):
     minus_z_double_prime = raw_df['-Z\'\' (Ω)']
 
     # Set up the scatter plot
-    plt.scatter(z_prime, minus_z_double_prime, marker='o', s=7, color='blue')   
+    plt.scatter(z_prime, minus_z_double_prime, marker='o', s=7, color='blue')
     # Set labels and title
     plt.xlabel('Z\' (Ω)')
     plt.ylabel('-Z\'\' (Ω)')
-  
+
+
 # A function to get the cell number from the file name to be used in output image file name.
 def cellno():
     global cellno
@@ -220,8 +245,8 @@ def find_cycles(filename):
         return int(match.group(1))
     else:
         return None
- 
- 
+
+
 def cell_state():
     global cell_state, title
     if 'AFFM' in filename:
@@ -239,8 +264,8 @@ def cell_state():
     else:
         title = f"{cellno}_{e_w} g"
     return title, cell_state
-    
-    
+
+
 #################################### Run of Events Starts Here ##########################################
 # get_file()
 # cellno()
@@ -326,7 +351,7 @@ def cell_state():
 #                     transparent=True,
 #                     dpi=1000)
 #     elif iV:
-        # print("Long cycle iV file found")
+# print("Long cycle iV file found")
 #         cap_df = cap_calc(raw_df)
 #         plot_ready = zero_remover(cap_df)
 #         cycle_x = [1, 10, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200]
@@ -369,13 +394,48 @@ def cell_state():
 #                 dpi=1000)
 #################################### Run of Events Ends Here ##########################################
 #################################### Testing Bay ##########################################
-print("Started..")
-file()
+print("Started..")  # Code starts here..
+file()  # Gets the file names and file paths
 print(file.path)
-sheets4plot = ['cycle', 'step', 'record']
-work_frames = parse_excel(file.path, sheets4plot)
-for sheet, df in work_frames.items():
-    print(f"Sheet name: {sheet}")
-    print(df.head())
+sheets4plot = ['cycle', 'step', 'record']  # the actual sheets I'm interested in the Excel file
+work_frames = parse_excel(file.path, sheets4plot)  # Trims the dataframe to only the selected sheets
+# Converting each sheet into a separate dataframes
+for sheet_name, df in work_frames.items():
+    globals()[sheet_name] = df  # Creates a global variable with the name of the sheet
+
+gcd_record = rest_remover(record)
+# print(f"Dataframe RECORD is {gcd_record}")
+
+# Create an empty dataframe to store results
+plot_data = pd.DataFrame()
+
+# Get the unique values for 'Cycle Index' and 'Step Type'
+cycle_values = gcd_record['Cycle Index'].unique()
+step_values = ['CC Chg', 'CC DChg']  # Since you have these two step types
+
+# Nested loop: first for 'Cycle Index', then for 'Step Type'
+for cycle in cycle_values:
+    for step in step_values:
+        # Define the filters
+        filters = {
+            'Cycle Index': cycle,
+            'Step Type': step
+        }
+
+        # Select columns to keep
+        XY = ['Chg. Spec. Cap.(mAh/g)', 'DChg. Spec. Cap.(mAh/g)', 'Voltage(V)']  # Change this to the columns you need
+
+        # Filter and select data
+        filtered_data = filter_trim(gcd_record, filters, XY)
+
+        # Append the filtered data to plot_data
+        plot_data = pd.concat([plot_data, filtered_data], axis=0)
+
+# Reset index after concatenation if needed
+plot_data.reset_index(drop=True, inplace=True)
+
+# Now 'plot_data' contains the filtered and selected data based on Cycle Index and Step Type
+print(plot_data)
+
 print("Finished")
 #################################### Testing Bay ##########################################
