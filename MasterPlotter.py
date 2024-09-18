@@ -12,7 +12,7 @@ warnings.simplefilter("ignore", category=UserWarning)
 pd.options.mode.chained_assignment = None
 
 # Declaring Variables
-filename, excel_data, cellno = None, None, None  # Electrode_Weight, Active_Material_Weight, Excel File Name, cell number variables, actual cell number
+filename, excel_data, cell_no = None, None, None  # Electrode_Weight, Active_Material_Weight, Excel File Name, cell number variables, actual cell number
 FMN, RPF, CYC = None, None, None  # Formation, Rate Profile, Long Cycle
 AC, Fresh, AFFM, AFCY, cell_state, title = None, None, None, None, None, None  # AC File, Fresh cell, After Formation, After Long Cycle
 
@@ -36,6 +36,25 @@ def file():
         file.path += ".csv"
     return
 
+# A function to get the cell number from the file name to be used in output image file name.
+def get_CellNo():
+    global cell_no
+    pattern = re.compile(r'C0[1-8]')
+    match = pattern.search(filename)
+    cell_no = match.group() if match else None
+    return
+
+# Finds the state of cell when the impedance was measured (Whether Fresh, After Formation or After Cycling)
+def cell_state():
+    global cell_state, title
+    if 'AFFM' in filename:
+        cell_state = 'After Formation'
+    elif 'Fresh' in filename:
+        cell_state = 'Fresh'
+    elif 'AFCY' in filename:
+        cell_state = 'After cycling'
+    else:
+        cell_state = None
 
 # Creating dataframes for each Excel sheet
 def parse_excel(path, sheets):
@@ -49,7 +68,6 @@ def parse_excel(path, sheets):
             print(f"Warning: Sheet {i} not found in the file.")
     return dataframes
 
-
 # Removing the unnecessary zeros from ACTION and ACCMAH
 def rest_remover(src_df):
     search_rest = ['Rest']
@@ -57,13 +75,11 @@ def rest_remover(src_df):
     src_df = src_df.loc[~only_rest]
     return src_df
 
-
 # Converting capacity from Ah to mAh and add it to a new column named 'Chg. Cap.(mAH)' and 'DChg. Cap.(mAh)'
 def conv_Ah_to_mAh(df):
     df['Chg. Cap.(mAh)'] = (df['Chg. Cap.(Ah)'] / 1000).__round__(4)
     df['DChg. Cap.(mAh)'] = (df['DChg. Cap.(Ah)'] / 1000).__round__(4)
     return df
-
 
 # Function to filter and select specific columns
 def filter_trim(df, filters, XY):
@@ -88,7 +104,6 @@ def filter_trim(df, filters, XY):
 
     return selected_df
 
-
 # Getting plot choice form user
 def user_choice():
     global FMN, RPF, CYC, iV, CE, AC
@@ -112,13 +127,12 @@ def user_choice():
         return plt_choice
     return FMN, RPF, CYC, iV, CE
 
-
+# Finds what kind of data is being given and creates bool values to respective variables.
 def plot_find():
     global FMN, RPF, CYC, iV, CE, AC, Fresh, AFFM, AFCY
     FMN, RPF, CYC, iV, CE = "FMN" in filename, "RPF" in filename, "CYC" in filename, "iV" in filename, "CE" in filename
     AC, Fresh, AFFM, AFCY = "AC" in filename, "Fresh" in filename, "AFFM" in filename, "AFCY" in filename
     return FMN, RPF, CYC, iV, CE, AC, Fresh, AFFM, AFCY
-
 
 # Plot function for formation plots
 def fmn_plotter(src_df, x, y):
@@ -131,8 +145,7 @@ def fmn_plotter(src_df, x, y):
              label=next(labels))
     return
 
-
-# Plot function for rate profile plots
+# Plot function for rate profile gcd plots
 def rpf_plotter(src_df, x):
     trend_file_check()
     cycle_bool = (src_df[' CYCLE'].isin([1]))
@@ -147,7 +160,7 @@ def rpf_plotter(src_df, x):
              label=next(labels))
     return
 
-
+# Plot function for rate profile step plots
 def rpf_step_plotter(src_df):
     CE_file_check()
 
@@ -163,7 +176,6 @@ def rpf_step_plotter(src_df):
              color='k',
              linewidth=3)
     return
-
 
 # Plot function for cycle life plots
 def cyc_plotter(src_df):
@@ -204,7 +216,6 @@ def cyc_plotter(src_df):
     plt.legend([cap_plot, CE_plot], ["Discharge Capacity", "CE"])
     return
 
-
 # Plot function for long cycle GCD plots
 def cyc_gcd_plotter(src_df, x, y):
     trend_file_check()
@@ -216,7 +227,7 @@ def cyc_gcd_plotter(src_df, x, y):
     plt.plot(step[' ACCMAHG'], step[' VOLTS'])
     return
 
-
+# Plot function for AC-Impedance plots
 def acimp_plotter(raw_df):
     # Extract Z' (Ω) and -Z'' (Ω) columns
     z_prime = raw_df['Z\' (Ω)']
@@ -229,13 +240,7 @@ def acimp_plotter(raw_df):
     plt.ylabel('-Z\'\' (Ω)')
 
 
-# A function to get the cell number from the file name to be used in output image file name.
-def cellno():
-    global cellno
-    pattern = re.compile(r'C0[1-8]')
-    match = pattern.search(filename)
-    cellno = match.group() if match else None
-    return
+
 
 
 # Find number of cycles
@@ -246,23 +251,11 @@ def find_cycles(filename):
     else:
         return None
 
-
-def cell_state():
-    global cell_state, title
-    if 'AFFM' in filename:
-        cell_state = 'After Formation'
-    elif 'Fresh' in filename:
-        cell_state = 'Fresh'
-    elif 'AFCY' in filename:
-        cell_state = 'After cycling'
-    else:
-        cell_state = None
-
-    # Add the suffix to the title if a corresponding keyword is present
+# Add the suffix to the plot title if a corresponding keyword is present
     if cell_state:
-        title = f"{cellno}_{e_w} g_{cell_state}"
+        title = f"{cell_no}_{e_w} g_{cell_state}"
     else:
-        title = f"{cellno}_{e_w} g"
+        title = f"{cell_no}_{e_w} g"
     return title, cell_state
 
 
@@ -393,18 +386,19 @@ def cell_state():
 #                 transparent=True,
 #                 dpi=1000)
 #################################### Run of Events Ends Here ##########################################
+print("Started...")
 #################################### Testing Bay ##########################################
-print("Started..")  # Code starts here..
 file()  # Gets the file names and file paths
 print(file.path)
+print(filename)
 sheets4plot = ['cycle', 'step', 'record']  # the actual sheets I'm interested in the Excel file
 work_frames = parse_excel(file.path, sheets4plot)  # Trims the dataframe to only the selected sheets
-# Converting each sheet into a separate dataframes
+#Converting each sheet into a separate dataframes
 for sheet_name, df in work_frames.items():
     globals()[sheet_name] = df  # Creates a global variable with the name of the sheet
 
 gcd_record = rest_remover(record)
-# print(f"Dataframe RECORD is {gcd_record}")
+print(f"Dataframe RECORD is {gcd_record}")
 
 # Create an empty dataframe to store results
 plot_data = pd.DataFrame()
@@ -423,18 +417,27 @@ for cycle in cycle_values:
         }
 
         # Select columns to keep
-        XY = ['Chg. Spec. Cap.(mAh/g)', 'DChg. Spec. Cap.(mAh/g)', 'Voltage(V)']  # Change this to the columns you need
+        if filters.get('Step Type') == 'CC Chg':
+            XY = ['Chg. Spec. Cap.(mAh/g)', 'Voltage(V)']
+            print(f"Filters Cycle {cycle} & {step} applied")
+        elif filters.get('Step Type') == 'CC DChg':
+            XY = ['DChg. Spec. Cap.(mAh/g)', 'Voltage(V)']
+            print(f"Filters Cycle {cycle} & {step} applied")
+        else:
+            print(f"There are no CC Chg or CC Dchg steps found")
+            quit()
 
         # Filter and select data
         filtered_data = filter_trim(gcd_record, filters, XY)
 
         # Append the filtered data to plot_data
-        plot_data = pd.concat([plot_data, filtered_data], axis=0)
+        # plot_data = pd.concat([plot_data, filtered_data], axis=0)
 
 # Reset index after concatenation if needed
-plot_data.reset_index(drop=True, inplace=True)
+# plot_data.reset_index(drop=True, inplace=True)
+
 
 # Now 'plot_data' contains the filtered and selected data based on Cycle Index and Step Type
-print(plot_data)
+# print(plot_data)
 print("Finished")
 #################################### Testing Bay ##########################################
