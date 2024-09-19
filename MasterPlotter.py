@@ -75,13 +75,6 @@ def get_cell_state(filename):
     else:
         cell_state = None
 
-# Removing the Rest Steps from the dataframe
-def rest_remover(src_df):
-    search_rest = ['Rest']
-    only_rest = (src_df['Step Type'].isin(search_rest))
-    src_df = src_df.loc[~only_rest]
-    return src_df
-
 # Converting capacity from Ah to mAh and add it to a new column named 'Chg. Cap.(mAH)' and 'DChg. Cap.(mAh)'
 def conv_Ah_to_mAh(df):
     df['Chg. Cap.(mAh)'] = (df['Chg. Cap.(Ah)'] / 1000).__round__(4)
@@ -141,24 +134,34 @@ def plot_find(filename):
     result = {key: key in filename for key in keywords}
     return result
 
+# Plot function for long cycle GCD plots
+def cyc_gcd_plotter(file_info, df):
+    num_cols = df.shape[1]  # Total number of columns
+    num_cycles = num_cols // 4  # Each cycle has 4 columns (2 XY pairs)
+
+    # Define a colormap with distinct colors for each cycle
+    colors = plt.get_cmap('tab10', num_cycles)
+    labels = cycle(['', '1', '', '10', '', '1 C', '', '5 C', '', '10 C', '', '0.2 C'])
+
+
 # Plot function for making plots of a dataframe
 def gcd_plotter(file_info, df):
     num_cols = df.shape[1]  # Total number of columns
     num_cycles = num_cols // 4  # Each cycle has 4 columns (2 XY pairs)
 
     # Define a colormap with distinct colors for each cycle
-    colors = plt.get_cmap('Set1', num_cycles)
-    colors = ['k', 'r', 'b']
+    colors = plt.get_cmap('tab10', num_cycles)
+    # colors = ['k', 'r', 'b']
 
     # plt.figure(figsize=(10, 6))
-
     for i in range(num_cycles):
         # Get the indices for each XY pair of the cycle
         X1, Y1 = df.iloc[:, 4 * i], df.iloc[:, 4 * i + 1]
         X2, Y2 = df.iloc[:, 4 * i + 2], df.iloc[:, 4 * i + 3]
 
         # Plot both XY pairs for the same cycle in the same color
-        cycle_color = colors[i % 3]
+        # cycle_color = colors[i % 3]
+        cycle_color = colors(i)
         line_thickness = 2.5
 
         plt.plot(X1, Y1, label=f'Cycle {i + 1}', color=cycle_color, linestyle='-', linewidth = line_thickness)
@@ -169,35 +172,20 @@ def gcd_plotter(file_info, df):
     plt.ylim([2.7, 4.4])
     plt.xlabel("Specific Capacity (mA h $g^{-1}$)")
     plt.ylabel("Voltage vs. Li/Li$^+$ (V)")
-    plt.title(f"GCD - {file_info['cell_no']} - {file_info['e_w']} g")
-    plt.legend()
-    plt.savefig(f'{file_info['date']}_{file_info['cell_no']}_FMN_GCD_Plot_{file_info['e_w']}g.png',
+    if plot_type['FMN']:
+        plt.title(f"Formation GCD - {file_info['cell_no']} - {file_info['e_w']} g")
+        plt.savefig(f'{file_info['date']}_{file_info['cell_no']}_FMN_GCD_Plot_{file_info['e_w']}g.png',
                 transparent=True,
                 dpi=1000)
-    plt.legend(
-        loc='lower left',  # Location of the legend
-        # fontsize='medium',  # Font size of the labels
-        # title='Legend Title',  # Title of the legend
-        # title_fontsize='13',  # Font size of the legend title
-        frameon=False,  # Display the frame around the legend
-        # shadow=True,  # Add a shadow behind the legend
-        fancybox=False,  # Rounded box around the legend
-        # borderpad=1.5,  # Padding between the legend border and the content
-        # labelspacing=1  # Vertical space between legend entries
-    )
-    # Show the plot
+        plt.legend(loc='lower left', frameon=False, fancybox=False)
+    elif plot_type['CYC']:
+        plt.title(f"Long Cycle GCD - {file_info['cell_no']} - {file_info['e_w']} g - {file_info['cyc_no']} cycles")
+        plt.savefig(f'{file_info['date']}_{file_info['cell_no']}_FMN_GCD_Plot_{file_info['e_w']}g_{file_info['cyc_no']} cycles.png',
+                    transparent=True,
+                    dpi=1000)
+        plt.legend(loc='lower left', frameon=False, fancybox=False)
+    else: pass
     plt.show()
-
-# Plot function for formation plots
-def fmn_plotter(src_df, x, y):
-    cy_bool = (src_df[' CYCLE'].isin([x]))
-    cy = src_df.loc[cy_bool]
-    st_bool = (cy[' STEP'].isin([y]))
-    step = cy.loc[st_bool]
-    plt.plot(step[' ACCMAHG'], step[' VOLTS'],
-             color=next(colors),
-             label=next(labels))
-    return
 
 # Plot function for rate profile gcd plots
 def rpf_plotter(src_df, x):
@@ -232,11 +220,11 @@ def rpf_step_plotter(src_df):
     return
 
 # Plot function for cycle life plots
-def cyc_plotter(file_info, cycle):
+def cyc_plotter(file_info, df):
     fig, ax1 = plt.subplots()
     ax1.set_xlabel("Cycles")
     ax1.set_ylabel("Specific discharge capacity (mA h $g^{-1}$)", color='blue')
-    cap_plot, = ax1.plot(cycle['Cycle Index'], cycle['DChg. Spec. Cap.(mAh/g)'],
+    cap_plot, = ax1.plot(df['Cycles'], df['DChg. Spec. Cap.(mAh/g)'],
                          label='Discharge Capacity',
                          color='blue',
                          linewidth=3,
@@ -246,8 +234,8 @@ def cyc_plotter(file_info, cycle):
     # ax1.set_xlim(0, 200)
 
     ax2 = ax1.twinx()
-    ax2.set_ylabel("Coulombic Efficiency (%)", color='red')
-    CE_plot, = ax2.plot(cycle['Cycle Index'], cycle['Chg.-DChg. Eff(%)'],
+    ax2.set_ylabel("Coulomb. Efficiency (%)", color='red')
+    CE_plot, = ax2.plot(df['Cycles'], df['Coulomb. Eff.(%)'],
                         label='CE',
                         color='red',
                         linewidth=3,
@@ -266,15 +254,7 @@ def cyc_plotter(file_info, cycle):
     return
 
 # Plot function for long cycle GCD plots
-def cyc_gcd_plotter(src_df, x, y):
-    trend_file_check()
 
-    cy_bool = (src_df[' CYCLE'].isin([x]))
-    cy = src_df.loc[cy_bool]
-    st_bool = (cy[' STEP'].isin([y]))
-    step = cy.loc[st_bool]
-    plt.plot(step[' ACCMAHG'], step[' VOLTS'])
-    return
 
 # Plot function for AC-Impedance plots
 def acimp_plotter(raw_df):
@@ -305,35 +285,58 @@ def cell_state():
     return title, cell_state
 
 def gcd_dataset(df):
-    cycle_values = df['Cycle Index'].unique()
+    if plot_type.get('FMN'):
+        cycle_values = df['Cycle Index'].unique()
+    elif plot_type.get('CYC'):
+        cycle_values = [1, 10, 25, 50, 75, 100, 150, 200]
+    else:
+        print("Provided file is neither FMN or CYC")
+        quit()
+
     step_values = ['CC Chg', 'CC DChg']
     plot_ready = pd.DataFrame()  # Create an empty dataframe to store results
 
     # Nested loop: first for 'Cycle Index', then for 'Step Type'
     for cycle in cycle_values:
-        for step in step_values:
-            # Define the filters
-            filters = {
-                'Cycle Index': cycle,
-                'Step Type': step
-            }
-            if filters.get('Step Type') == 'CC Chg':
-                XY = ['Chg. Spec. Cap.(mAh/g)', 'Voltage(V)']
-                print(f"Cycle {cycle} & {step} found")
-            elif filters.get('Step Type') == 'CC DChg':
-                XY = ['DChg. Spec. Cap.(mAh/g)', 'Voltage(V)']
-                print(f"Cycle {cycle} & {step} found")
-            else:
-                print(f"There are no CC Chg or CC Dchg steps found")
-                quit()
+        if cycle in df['Cycle Index'].values:
+            for step in step_values:
+                # Define the filters
+                filters = {
+                    'Cycle Index': cycle,
+                    'Step Type': step
+                }
+                if filters.get('Step Type') == 'CC Chg':
+                    XY = ['Chg. Spec. Cap.(mAh/g)', 'Voltage(V)']
+                    print(f"Cycle {cycle} & {step} found")
+                elif filters.get('Step Type') == 'CC DChg':
+                    XY = ['DChg. Spec. Cap.(mAh/g)', 'Voltage(V)']
+                    print(f"Cycle {cycle} & {step} found")
+                else:
+                    print(f"There are no CC Chg or CC Dchg steps found")
+                    quit()
 
-            # Filter and select data
-            filtered_data = filter_xyz(df, filters, XY)
-            dynamic_col_names = {col: f"Cycle_{cycle}_{step}" for col in filtered_data.columns}
-            filtered_data.rename(columns=dynamic_col_names, inplace=True)
-            # Append the filtered data to plot_data
-            plot_ready = pd.concat([plot_ready.reset_index(drop=True), filtered_data.reset_index(drop=True)], axis=1)
+                # Filter and select data
+                filtered_data = filter_xyz(df, filters, XY)
+                dynamic_col_names = {col: f"Cycle_{cycle}_{step}" for col in filtered_data.columns}
+                filtered_data.rename(columns=dynamic_col_names, inplace=True)
+                # Append the filtered data to plot_data
+                plot_ready = pd.concat([plot_ready.reset_index(drop=True), filtered_data.reset_index(drop=True)], axis=1)
+        else: pass
     return plot_ready
+
+def cyc_dataset(df):
+    return pd.DataFrame({
+        'Cycles': df['Cycle Index'],
+        'Chg. Cap.(mAh)': (df['Chg. Cap.(Ah)'] * 1000).round(4),
+        'DChg. Cap.(mAh)': (df['DChg. Cap.(Ah)'] * 1000).round(4),
+        'Coulomb. Eff.(%)': df['Chg.-DChg. Eff(%)'],
+        'Chg. Spec. Cap.(mAh/g)': df['Chg. Spec. Cap.(mAh/g)'],
+        'DChg. Spec. Cap.(mAh/g)': df['DChg. Spec. Cap.(mAh/g)'],
+        'Cap. Retention(%)': df['Cap. Retention(%)'],
+        'Chg. Spec. Energy(mWh/g)': df['Chg. Spec. Energy(mWh/g)'],
+        'DChg. Spec. Energy(mWh/g)': df['DChg. Spec. Energy(mWh/g)'],
+        'Energy Eff.(%)': df['Energy Eff.(%)']
+    })
 
 
 #################################### Run of Events Starts Here ##########################################
@@ -482,6 +485,7 @@ elif plot_type.get('RPF'):
     print("Rate Profile is being plotted")
 elif plot_type.get('CYC'):
     print("Cycle Life is being plotted")
-    cyc_plotter(file_info, cycle)
-
+    cyc_plotter(file_info, cyc_dataset(cycle))
+    print("Cycle Life GCD is being plotted for all cycles")
+    gcd_plotter(file_info, gcd_dataset(record))
 print("..Finished")
