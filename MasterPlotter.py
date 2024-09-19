@@ -143,7 +143,6 @@ def cyc_gcd_plotter(file_info, df):
     colors = plt.get_cmap('tab10', num_cycles)
     labels = cycle(['', '1', '', '10', '', '1 C', '', '5 C', '', '10 C', '', '0.2 C'])
 
-
 # Plot function for making plots of a dataframe
 def gcd_plotter(file_info, df):
     num_cols = df.shape[1]  # Total number of columns
@@ -253,9 +252,6 @@ def cyc_plotter(file_info, df):
     plt.show()
     return
 
-# Plot function for long cycle GCD plots
-
-
 # Plot function for AC-Impedance plots
 def acimp_plotter(raw_df):
     # Extract Z' (Ω) and -Z'' (Ω) columns
@@ -340,11 +336,6 @@ def cyc_dataset(df):
 
 
 #################################### Run of Events Starts Here ##########################################
-# get_file()
-# get_cell_no()
-# date = filename[2:8]
-
-
 # Finding out user choice
 # auto_find = user_choice()
 #
