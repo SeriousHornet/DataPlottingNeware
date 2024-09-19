@@ -82,7 +82,7 @@ def conv_Ah_to_mAh(df):
     return df
 
 # Function to filter and select specific columns
-def filter_trim(df, filters, XY):
+def filter_xyz(df, filters, XY):
     """
     Filters a dataframe based on specified conditions and selects certain columns.
 
@@ -239,10 +239,6 @@ def acimp_plotter(raw_df):
     plt.xlabel('Z\' (Ω)')
     plt.ylabel('-Z\'\' (Ω)')
 
-
-
-
-
 # Find number of cycles
 def find_cycles(filename):
     match = re.search(r'@(\d+)', filename)
@@ -389,23 +385,18 @@ def find_cycles(filename):
 print("Started...")
 #################################### Testing Bay ##########################################
 file()  # Gets the file names and file paths
-print(file.path)
-print(filename)
 sheets4plot = ['cycle', 'step', 'record']  # the actual sheets I'm interested in the Excel file
 work_frames = parse_excel(file.path, sheets4plot)  # Trims the dataframe to only the selected sheets
-#Converting each sheet into a separate dataframes
-for sheet_name, df in work_frames.items():
+for sheet_name, df in work_frames.items(): #Converting each sheet into a separate dataframes
     globals()[sheet_name] = df  # Creates a global variable with the name of the sheet
 
-gcd_record = rest_remover(record)
-print(f"Dataframe RECORD is {gcd_record}")
+# gcd_record = rest_remover(record)
 
-# Create an empty dataframe to store results
-plot_data = pd.DataFrame()
+plot_data = pd.DataFrame() # Create an empty dataframe to store results
 
 # Get the unique values for 'Cycle Index' and 'Step Type'
-cycle_values = gcd_record['Cycle Index'].unique()
-step_values = ['CC Chg', 'CC DChg']  # Since you have these two step types
+cycle_values = record['Cycle Index'].unique()
+step_values = ['CC Chg', 'CC DChg']
 
 # Nested loop: first for 'Cycle Index', then for 'Step Type'
 for cycle in cycle_values:
@@ -415,29 +406,25 @@ for cycle in cycle_values:
             'Cycle Index': cycle,
             'Step Type': step
         }
-
-        # Select columns to keep
         if filters.get('Step Type') == 'CC Chg':
             XY = ['Chg. Spec. Cap.(mAh/g)', 'Voltage(V)']
-            print(f"Filters Cycle {cycle} & {step} applied")
+            # print(f"Filters Cycle {cycle} & {step} applied")
         elif filters.get('Step Type') == 'CC DChg':
             XY = ['DChg. Spec. Cap.(mAh/g)', 'Voltage(V)']
-            print(f"Filters Cycle {cycle} & {step} applied")
+            # print(f"Filters Cycle {cycle} & {step} applied")
         else:
             print(f"There are no CC Chg or CC Dchg steps found")
             quit()
 
         # Filter and select data
-        filtered_data = filter_trim(gcd_record, filters, XY)
-
+        filtered_data = filter_xyz(record, filters, XY)
+        # print(filtered_data)
+        dynamic_col_names = {col: f"Cycle_{cycle}_{step}" for col in filtered_data.columns}
+        filtered_data.rename(columns=dynamic_col_names, inplace=True)
         # Append the filtered data to plot_data
-        # plot_data = pd.concat([plot_data, filtered_data], axis=0)
+        plot_data = pd.concat([plot_data.reset_index(drop=True), filtered_data.reset_index(drop=True)], axis=1)
 
-# Reset index after concatenation if needed
-# plot_data.reset_index(drop=True, inplace=True)
-
-
-# Now 'plot_data' contains the filtered and selected data based on Cycle Index and Step Type
-# print(plot_data)
+# Now 'plot_data' contains the filtered rows and selected columns.
+print(plot_data)
 print("Finished")
 #################################### Testing Bay ##########################################
