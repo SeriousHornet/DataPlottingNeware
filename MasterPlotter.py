@@ -1,4 +1,7 @@
 #  Import List
+from fileinput import filename
+from os.path import pathsep
+
 import matplotlib.pyplot as plt
 from itertools import cycle
 import pandas as pd
@@ -7,54 +10,46 @@ import os
 import re
 import warnings
 
-#
+# To avoid errors
 warnings.simplefilter("ignore", category=UserWarning)
 pd.options.mode.chained_assignment = None
 
 # Declaring Variables
-filename, excel_data, cell_no = None, None, None  # Electrode_Weight, Active_Material_Weight, Excel File Name, cell number variables, actual cell number
-FMN, RPF, CYC = None, None, None  # Formation, Rate Profile, Long Cycle
-AC, Fresh, AFFM, AFCY, cell_state, title = None, None, None, None, None, None  # AC File, Fresh cell, After Formation, After Long Cycle
+excel_data = None  # Electrode_Weight, Excel File Name, excel data, actual cell number, date
+cell_state, title = None, None  # AC File, Fresh cell, After Formation, After Long Cycle, cell state, Plot title
 
-
-# functions #
-
-# Getting the file input from user
+# To parse file information from file's path
 def file():
-    global filename
     # raw_path = input("Enter the path of the file: ")
-    raw_path = r'"C:\Users\Mano-BRCGE\Desktop\NeWare Data\20240905-Oven-Com-LiDFP\240905-C01-CNCMA90-LiDFOB+LiDFP-0.01144-0.1C.xlsx"'
-    path = raw_path.strip(' " " ')
-    filename = str(os.path.basename(path).split('/'))
-
-    file.path = path
-
-    csv, CSV, txt, xlsx = ".csv" in file.path, ".CSV" in file.path, ".txt" in file.path, ".xlsx" in file.path
-    if txt or csv or CSV or xlsx:
-        pass
-    else:
-        file.path += ".csv"
-    return
-
-# A function to get the cell number from the file name to be used in output image file name.
-def get_CellNo():
-    global cell_no
+    raw_path = r'"C:\Users\Mano-BRCGE\Desktop\NeWare Data\20240912- Oven-Com-ECDEC\240912-C02-C-NCMA90-EC-DEC-0.01166-CYC@59.xlsx"'
+    file_path = raw_path.strip(' " " ')
+    filename = str(os.path.basename(file_path))
+    file.file_path = file_path
+    #finding date from file name
+    date = filename[0:6]
+    #finding cell number
     pattern = re.compile(r'C0[1-8]')
-    match = pattern.search(filename)
-    cell_no = match.group() if match else None
-    return
-
-# Finds the state of cell when the impedance was measured (Whether Fresh, After Formation or After Cycling)
-def cell_state():
-    global cell_state, title
-    if 'AFFM' in filename:
-        cell_state = 'After Formation'
-    elif 'Fresh' in filename:
-        cell_state = 'Fresh'
-    elif 'AFCY' in filename:
-        cell_state = 'After cycling'
-    else:
-        cell_state = None
+    cell_no_match = pattern.search(filename)
+    cell_no = cell_no_match.group() if cell_no_match else None
+    # finding cell weight
+    ew_match = re.search(r'[-+]?\d*\.\d+', filename)
+    e_w = float(ew_match.group()) * -1 if ew_match else None
+    #find number of cycles if any
+    cyc_match = re.search(r'@(\d+)', filename)
+    cyc_no = int(cyc_match.group(1)) if cyc_match else None
+    # checking if the path has extension, if not add.
+    # csv, CSV, txt, xlsx = ".csv" in file.path, ".CSV" in file.path, ".txt" in file.path, ".xlsx" in file.path
+    # if txt or csv or CSV or xlsx:
+    #     pass
+    # else:
+    #     file.path += ".csv"
+    return {
+        'filename': filename,
+        'date': date,
+        'cell_no': cell_no,
+        'e_w': e_w,
+        'cyc_no': cyc_no
+    }
 
 # Creating dataframes for each Excel sheet
 def parse_excel(path, sheets):
@@ -68,7 +63,19 @@ def parse_excel(path, sheets):
             print(f"Warning: Sheet {i} not found in the file.")
     return dataframes
 
-# Removing the unnecessary zeros from ACTION and ACCMAH
+# Finds the state of cell when the impedance was measured (Whether Fresh, After Formation or After Cycling)
+def get_cell_state(filename):
+    global cell_state
+    if 'AFFM' in filename:
+        cell_state = 'After Formation'
+    elif 'Fresh' in filename:
+        cell_state = 'Fresh'
+    elif 'AFCY' in filename:
+        cell_state = 'After cycling'
+    else:
+        cell_state = None
+
+# Removing the Rest Steps from the dataframe
 def rest_remover(src_df):
     search_rest = ['Rest']
     only_rest = (src_df['Step Type'].isin(search_rest))
@@ -83,56 +90,103 @@ def conv_Ah_to_mAh(df):
 
 # Function to filter and select specific columns
 def filter_xyz(df, filters, XY):
-    """
-    Filters a dataframe based on specified conditions and selects certain columns.
-
-    Parameters:
-    - df (DataFrame): The original dataframe to filter.
-    - filters (dict): A dictionary where keys are column names and values are the filter values.
-    - XY (list): A list of columns to select from the filtered data.
-
-    Returns:
-    - DataFrame: The filtered and selected dataframe.
-    """
-    # Apply filters based on the provided conditions
     filtered_df = df.copy()  # Copy the original DataFrame to avoid modifying it
     for column, value in filters.items():
         filtered_df = filtered_df[filtered_df[column] == value]
-
     # Select the specified columns
     selected_df = filtered_df[XY]
-
     return selected_df
 
 # Getting plot choice form user
-def user_choice():
-    global FMN, RPF, CYC, iV, CE, AC
-    FMN, RPF, CYC, iV, CE, AC = "FMN" in filename, "RPF" in filename, "CYC" in filename, "iV" in filename, "CE" in filename, "AC" in filename
-    if FMN or RPF or CYC or iV or CE or AC:
-        pass
-    else:
-        plt_choice = int(input("1. Formation Cycles Plot \n"
-                               "or\n"
-                               "2. Rate Profile Plot \n"
-                               "or\n"
-                               "3. Long Cycles Plot \n"
-                               "Please choose 1 or 2 or 3>>: "))
-        if plt_choice == 2:
-            rpf_choice = int(input("4. Voltage Profile \n"
+def user_choice(filename):
+    choices = {
+        'FMN': "FMN" in filename,
+        'RPF': "RPF" in filename,
+        'CYC': "CYC" in filename,
+        'iV': "iV" in filename,
+        'CE': "CE" in filename,
+        'AC': "AC" in filename
+    }
+    if any(choices.values()):
+        return choices
+    while True:
+        try:
+            plot_choice = int(input("1. Formation Cycles Plot \n"
                                    "or\n"
-                                   "5. Step Profile\n"
-                                   "Please choose a or b>>: "))
-            plt_choice = rpf_choice
-            return plt_choice
-        return plt_choice
-    return FMN, RPF, CYC, iV, CE
+                                   "2. Rate Profile Plot \n"
+                                   "or\n"
+                                   "3. Long Cycles Plot \n"
+                                   "Please choose 1 or 2 or 3>>: "))
+            if plot_choice == 2:
+                rpf_choice = int(input("4. Voltage Profile \n"
+                                       "or\n"
+                                       "5. Step Profile\n"
+                                       "Please choose 4 or 5 >>: "))
+                if rpf_choice in [4, 5]:
+                    return rpf_choice
+                else:
+                    print("Invalid choice. Please choose 4 or 5.")
+            elif plot_choice in [1, 3]:
+                return plot_choice
+            else:
+                print("Invalid choice. Please choose 1, 2, or 3.")
+        except ValueError:
+            print("Invalid input. Please enter a number.")
 
 # Finds what kind of data is being given and creates bool values to respective variables.
-def plot_find():
-    global FMN, RPF, CYC, iV, CE, AC, Fresh, AFFM, AFCY
-    FMN, RPF, CYC, iV, CE = "FMN" in filename, "RPF" in filename, "CYC" in filename, "iV" in filename, "CE" in filename
-    AC, Fresh, AFFM, AFCY = "AC" in filename, "Fresh" in filename, "AFFM" in filename, "AFCY" in filename
-    return FMN, RPF, CYC, iV, CE, AC, Fresh, AFFM, AFCY
+def plot_find(filename):
+    # Keywords to check in the filename
+    keywords = ["FMN", "RPF", "CYC", "iV", "CE", "AC", "Fresh", "AFFM", "AFCY"]
+    # Dictionary comprehension to check if each keyword is in the filename
+    result = {key: key in filename for key in keywords}
+    return result
+
+# Plot function for making plots of a dataframe
+def gcd_plotter(file_info, df):
+    num_cols = df.shape[1]  # Total number of columns
+    num_cycles = num_cols // 4  # Each cycle has 4 columns (2 XY pairs)
+
+    # Define a colormap with distinct colors for each cycle
+    colors = plt.get_cmap('Set1', num_cycles)
+    colors = ['k', 'r', 'b']
+
+    # plt.figure(figsize=(10, 6))
+
+    for i in range(num_cycles):
+        # Get the indices for each XY pair of the cycle
+        X1, Y1 = df.iloc[:, 4 * i], df.iloc[:, 4 * i + 1]
+        X2, Y2 = df.iloc[:, 4 * i + 2], df.iloc[:, 4 * i + 3]
+
+        # Plot both XY pairs for the same cycle in the same color
+        cycle_color = colors[i % 3]
+        line_thickness = 2.5
+
+        plt.plot(X1, Y1, label=f'Cycle {i + 1}', color=cycle_color, linestyle='-', linewidth = line_thickness)
+        plt.plot(X2, Y2, color=cycle_color, linestyle='-', linewidth = line_thickness)
+
+    # Customize the plot
+    plt.xlim(left=0)
+    plt.ylim([2.7, 4.4])
+    plt.xlabel("Specific Capacity (mA h $g^{-1}$)")
+    plt.ylabel("Voltage vs. Li/Li$^+$ (V)")
+    plt.title(f"GCD - {file_info['cell_no']} - {file_info['e_w']} g")
+    plt.legend()
+    plt.savefig(f'{file_info['date']}_{file_info['cell_no']}_FMN_GCD_Plot_{file_info['e_w']}g.png',
+                transparent=True,
+                dpi=1000)
+    plt.legend(
+        loc='lower left',  # Location of the legend
+        # fontsize='medium',  # Font size of the labels
+        # title='Legend Title',  # Title of the legend
+        # title_fontsize='13',  # Font size of the legend title
+        frameon=False,  # Display the frame around the legend
+        # shadow=True,  # Add a shadow behind the legend
+        fancybox=False,  # Rounded box around the legend
+        # borderpad=1.5,  # Padding between the legend border and the content
+        # labelspacing=1  # Vertical space between legend entries
+    )
+    # Show the plot
+    plt.show()
 
 # Plot function for formation plots
 def fmn_plotter(src_df, x, y):
@@ -178,24 +232,11 @@ def rpf_step_plotter(src_df):
     return
 
 # Plot function for cycle life plots
-def cyc_plotter(src_df):
-    CE_file_check()
-
-    global a_m_w
-    src_df['Acc mAHg'] = (src_df['Acc mAH'] / a_m_w).__round__(2)
-
-    chg_bool = (src_df['Action'].isin(['Charge']))
-    chg = src_df.loc[chg_bool]
-    dischg = src_df.loc[~chg_bool]
-    CE_df = pd.DataFrame({'Cycle': chg['Cycle']})
-    CE_df['Chg mAH'] = chg['Acc mAH'].to_numpy()
-    CE_df['Dischg mAH'] = dischg['Acc mAH'].to_numpy()
-    CE_df['CE'] = (CE_df['Dischg mAH'] / CE_df['Chg mAH'] * 100).round(2)
-
+def cyc_plotter(file_info, cycle):
     fig, ax1 = plt.subplots()
     ax1.set_xlabel("Cycles")
     ax1.set_ylabel("Specific discharge capacity (mA h $g^{-1}$)", color='blue')
-    cap_plot, = ax1.plot(dischg['Cycle'], dischg['Acc mAHg'],
+    cap_plot, = ax1.plot(cycle['Cycle Index'], cycle['DChg. Spec. Cap.(mAh/g)'],
                          label='Discharge Capacity',
                          color='blue',
                          linewidth=3,
@@ -206,14 +247,22 @@ def cyc_plotter(src_df):
 
     ax2 = ax1.twinx()
     ax2.set_ylabel("Coulombic Efficiency (%)", color='red')
-    CE_plot, = ax2.plot(CE_df['Cycle'], CE_df['CE'],
+    CE_plot, = ax2.plot(cycle['Cycle Index'], cycle['Chg.-DChg. Eff(%)'],
                         label='CE',
                         color='red',
                         linewidth=3,
                         marker='*')
     ax2.tick_params(axis='y', labelcolor='red')
     ax2.set_ylim(0, 110)
-    plt.legend([cap_plot, CE_plot], ["Discharge Capacity", "CE"])
+    plt.legend([cap_plot, CE_plot], ["Specific Discharge Capacity", "CE"],
+        loc = 'lower left',
+        frameon =False,
+        fancybox =False)
+    plt.title(f"Long Cycling - {file_info['cell_no']} - {file_info['e_w']}g - {file_info['cyc_no']} cycles")
+    plt.savefig(f'{file_info['date']}_{file_info['cell_no']}_Long_CYC_Plot_{file_info['e_w']}g_{file_info['cyc_no']}_cycles.png',
+                        transparent=True,
+                        dpi=1000)
+    plt.show()
     return
 
 # Plot function for long cycle GCD plots
@@ -248,16 +297,48 @@ def find_cycles(filename):
         return None
 
 # Add the suffix to the plot title if a corresponding keyword is present
+def cell_state():
     if cell_state:
         title = f"{cell_no}_{e_w} g_{cell_state}"
     else:
         title = f"{cell_no}_{e_w} g"
     return title, cell_state
 
+def gcd_dataset(df):
+    cycle_values = df['Cycle Index'].unique()
+    step_values = ['CC Chg', 'CC DChg']
+    plot_ready = pd.DataFrame()  # Create an empty dataframe to store results
+
+    # Nested loop: first for 'Cycle Index', then for 'Step Type'
+    for cycle in cycle_values:
+        for step in step_values:
+            # Define the filters
+            filters = {
+                'Cycle Index': cycle,
+                'Step Type': step
+            }
+            if filters.get('Step Type') == 'CC Chg':
+                XY = ['Chg. Spec. Cap.(mAh/g)', 'Voltage(V)']
+                print(f"Cycle {cycle} & {step} found")
+            elif filters.get('Step Type') == 'CC DChg':
+                XY = ['DChg. Spec. Cap.(mAh/g)', 'Voltage(V)']
+                print(f"Cycle {cycle} & {step} found")
+            else:
+                print(f"There are no CC Chg or CC Dchg steps found")
+                quit()
+
+            # Filter and select data
+            filtered_data = filter_xyz(df, filters, XY)
+            dynamic_col_names = {col: f"Cycle_{cycle}_{step}" for col in filtered_data.columns}
+            filtered_data.rename(columns=dynamic_col_names, inplace=True)
+            # Append the filtered data to plot_data
+            plot_ready = pd.concat([plot_ready.reset_index(drop=True), filtered_data.reset_index(drop=True)], axis=1)
+    return plot_ready
+
 
 #################################### Run of Events Starts Here ##########################################
 # get_file()
-# cellno()
+# get_cell_no()
 # date = filename[2:8]
 
 
@@ -382,49 +463,25 @@ def find_cycles(filename):
 #                 transparent=True,
 #                 dpi=1000)
 #################################### Run of Events Ends Here ##########################################
-print("Started...")
-#################################### Testing Bay ##########################################
-file()  # Gets the file names and file paths
+print("Started..")
+
+file_info = file()
+filename = file_info['filename']
+plot_type = plot_find(filename)
+
 sheets4plot = ['cycle', 'step', 'record']  # the actual sheets I'm interested in the Excel file
-work_frames = parse_excel(file.path, sheets4plot)  # Trims the dataframe to only the selected sheets
+
+work_frames = parse_excel(file.file_path, sheets4plot)  # Trims the dataframe to only the selected sheets
 for sheet_name, df in work_frames.items(): #Converting each sheet into a separate dataframes
     globals()[sheet_name] = df  # Creates a global variable with the name of the sheet
 
-# gcd_record = rest_remover(record)
+if plot_type.get('FMN'):
+    print("Formation is being plotted")
+    gcd_plotter(file_info, gcd_dataset(record))
+elif plot_type.get('RPF'):
+    print("Rate Profile is being plotted")
+elif plot_type.get('CYC'):
+    print("Cycle Life is being plotted")
+    cyc_plotter(file_info, cycle)
 
-plot_data = pd.DataFrame() # Create an empty dataframe to store results
-
-# Get the unique values for 'Cycle Index' and 'Step Type'
-cycle_values = record['Cycle Index'].unique()
-step_values = ['CC Chg', 'CC DChg']
-
-# Nested loop: first for 'Cycle Index', then for 'Step Type'
-for cycle in cycle_values:
-    for step in step_values:
-        # Define the filters
-        filters = {
-            'Cycle Index': cycle,
-            'Step Type': step
-        }
-        if filters.get('Step Type') == 'CC Chg':
-            XY = ['Chg. Spec. Cap.(mAh/g)', 'Voltage(V)']
-            # print(f"Filters Cycle {cycle} & {step} applied")
-        elif filters.get('Step Type') == 'CC DChg':
-            XY = ['DChg. Spec. Cap.(mAh/g)', 'Voltage(V)']
-            # print(f"Filters Cycle {cycle} & {step} applied")
-        else:
-            print(f"There are no CC Chg or CC Dchg steps found")
-            quit()
-
-        # Filter and select data
-        filtered_data = filter_xyz(record, filters, XY)
-        # print(filtered_data)
-        dynamic_col_names = {col: f"Cycle_{cycle}_{step}" for col in filtered_data.columns}
-        filtered_data.rename(columns=dynamic_col_names, inplace=True)
-        # Append the filtered data to plot_data
-        plot_data = pd.concat([plot_data.reset_index(drop=True), filtered_data.reset_index(drop=True)], axis=1)
-
-# Now 'plot_data' contains the filtered rows and selected columns.
-print(plot_data)
-print("Finished")
-#################################### Testing Bay ##########################################
+print("..Finished")
