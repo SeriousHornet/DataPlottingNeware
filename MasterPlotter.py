@@ -10,9 +10,6 @@ import warnings
 warnings.simplefilter("ignore", category=UserWarning)
 pd.options.mode.chained_assignment = None
 
-# Declaring Variables
-cell_state, title = None, None  # AC File, Fresh cell, After Formation, After Long Cycle, cell state, Plot title
-
 
 # To parse file information from file's path
 def file():
@@ -183,7 +180,8 @@ def export_excel(file_info, df1, df2):
                 engine='openpyxl') as writer:
             df1.to_excel(writer, sheet_name='GCD Data', index=False)
             df2.to_excel(writer, sheet_name='CYC Data', index=False)
-    else:   quit()
+    else:
+        quit()
 
 
 # Plot function for making plots of a dataframe
