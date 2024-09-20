@@ -113,6 +113,42 @@ def plot_find(filename):
     return result
 
 
+# Plot function for making plots of a dataframe
+def gcd_plotter(file_info, df):
+    num_cols = df.shape[1]  # Total number of columns
+    num_cycles = num_cols // 4  # Each cycle has 4 columns (2 XY pairs)
+
+    # Define a colormap with distinct colors for each cycle
+    colors = plt.get_cmap('tab10', num_cycles)
+    # colors = ['k', 'r', 'b']
+
+    # plt.figure(figsize=(10, 6))
+    for i in range(num_cycles):
+        # Get the indices for each XY pair of the cycle
+        X1, Y1 = df.iloc[:, 4 * i], df.iloc[:, 4 * i + 1]
+        X2, Y2 = df.iloc[:, 4 * i + 2], df.iloc[:, 4 * i + 3]
+
+        # Plot both XY pairs for the same cycle in the same color
+        # cycle_color = colors[i % 3]
+        cycle_color = colors(i)
+        line_thickness = 2.5
+
+        plt.plot(X1, Y1, label=f'Cycle {i + 1}', color=cycle_color, linestyle='-', linewidth=line_thickness)
+        plt.plot(X2, Y2, color=cycle_color, linestyle='-', linewidth=line_thickness)
+
+    # Customize the plot
+    plt.xlim(left=0)
+    plt.ylim([2.7, 4.4])
+    plt.xlabel("Specific Capacity (mA h $g^{-1}$)")
+    plt.ylabel("Voltage vs. Li/Li$^+$ (V)")
+    plt.title(f"Formation GCD - {file_info['cell_no']} - {file_info['e_w']} g")
+    plt.savefig(f'{file_info['date']}_{file_info['cell_no']}_FMN_GCD_Plot_{file_info['e_w']}g.png',
+                transparent=True,
+                dpi=1000)
+    plt.legend(loc='lower left', frameon=False, fancybox=False)
+    plt.show()
+
+
 # Plot function for long cycle GCD plots
 def cyc_gcd_plotter(file_info, df):
     num_cols = df.shape[1]  # Total number of columns
@@ -146,42 +182,6 @@ def cyc_gcd_plotter(file_info, df):
         f'{file_info['date']} {file_info['cell_no']} Long Cycle GCD Plot {file_info['e_w']} g {file_info['cyc_no']} cycles.png',
         transparent=True,
         dpi=1000)
-    plt.legend(loc='lower left', frameon=False, fancybox=False)
-    plt.show()
-
-
-# Plot function for making plots of a dataframe
-def gcd_plotter(file_info, df):
-    num_cols = df.shape[1]  # Total number of columns
-    num_cycles = num_cols // 4  # Each cycle has 4 columns (2 XY pairs)
-
-    # Define a colormap with distinct colors for each cycle
-    colors = plt.get_cmap('tab10', num_cycles)
-    # colors = ['k', 'r', 'b']
-
-    # plt.figure(figsize=(10, 6))
-    for i in range(num_cycles):
-        # Get the indices for each XY pair of the cycle
-        X1, Y1 = df.iloc[:, 4 * i], df.iloc[:, 4 * i + 1]
-        X2, Y2 = df.iloc[:, 4 * i + 2], df.iloc[:, 4 * i + 3]
-
-        # Plot both XY pairs for the same cycle in the same color
-        # cycle_color = colors[i % 3]
-        cycle_color = colors(i)
-        line_thickness = 2.5
-
-        plt.plot(X1, Y1, label=f'Cycle {i + 1}', color=cycle_color, linestyle='-', linewidth=line_thickness)
-        plt.plot(X2, Y2, color=cycle_color, linestyle='-', linewidth=line_thickness)
-
-    # Customize the plot
-    plt.xlim(left=0)
-    plt.ylim([2.7, 4.4])
-    plt.xlabel("Specific Capacity (mA h $g^{-1}$)")
-    plt.ylabel("Voltage vs. Li/Li$^+$ (V)")
-    plt.title(f"Formation GCD - {file_info['cell_no']} - {file_info['e_w']} g")
-    plt.savefig(f'{file_info['date']}_{file_info['cell_no']}_FMN_GCD_Plot_{file_info['e_w']}g.png',
-                transparent=True,
-                dpi=1000)
     plt.legend(loc='lower left', frameon=False, fancybox=False)
     plt.show()
 
