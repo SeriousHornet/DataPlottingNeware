@@ -183,7 +183,7 @@ def export_excel(file_info, df1, df2):
                 engine='openpyxl') as writer:
             df1.to_excel(writer, sheet_name='GCD Data', index=False)
             df2.to_excel(writer, sheet_name='CYC Data', index=False)
-    else:   pass
+    else:   quit()
 
 
 # Plot function for making plots of a dataframe
