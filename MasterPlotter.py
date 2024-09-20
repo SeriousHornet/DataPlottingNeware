@@ -5,6 +5,7 @@ import pandas as pd
 import os
 import re
 import warnings
+import sys
 
 # To avoid errors
 warnings.simplefilter("ignore", category=UserWarning)
@@ -14,7 +15,7 @@ pd.options.mode.chained_assignment = None
 # To parse file information from file's path
 def file():
     # raw_path = input("Enter the path of the file: ")
-    raw_path = r'"C:\Users\Mano-BRCGE\Desktop\NeWare Data\20240905-ComNCMA-Oven\ECDEC\240912-C01-C-NCMA90-EC-DEC-0.01098-CYC@58.xlsx"'
+    raw_path = sys.argv[1]
     file_path = raw_path.strip(' " " ')
     filename = str(os.path.basename(file_path))
     file.file_path = file_path
