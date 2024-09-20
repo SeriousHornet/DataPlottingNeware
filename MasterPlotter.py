@@ -113,6 +113,79 @@ def plot_find(filename):
     return result
 
 
+# Create a dataset of GCD values for plotting
+def gcd_dataset(df):
+    if plot_type.get('FMN'):
+        cycle_values = df['Cycle Index'].unique()
+    elif plot_type.get('CYC'):
+        cycle_values = [1, 10, 25, 50, 75, 100, 150, 200]
+    else:
+        print("Provided file is neither FMN or CYC")
+        quit()
+
+    step_values = ['CC Chg', 'CC DChg']
+    plot_ready = pd.DataFrame()  # Create an empty dataframe to store results
+
+    # Nested loop: first for 'Cycle Index', then for 'Step Type'
+    for cycle in cycle_values:
+        if cycle in df['Cycle Index'].values:
+            for step in step_values:
+                # Define the filters
+                filters = {
+                    'Cycle Index': cycle,
+                    'Step Type': step
+                }
+                if filters.get('Step Type') == 'CC Chg':
+                    XY = ['Chg. Spec. Cap.(mAh/g)', 'Voltage(V)']
+                    print(f"Cycle {cycle} & {step} found")
+                elif filters.get('Step Type') == 'CC DChg':
+                    XY = ['DChg. Spec. Cap.(mAh/g)', 'Voltage(V)']
+                    print(f"Cycle {cycle} & {step} found")
+                else:
+                    print(f"There are no CC Chg or CC Dchg steps found")
+                    quit()
+
+                # Filter and select data
+                filtered_data = filter_xyz(df, filters, XY)
+                dynamic_col_names = {col: f"Cycle_{cycle}_{step}" for col in filtered_data.columns}
+                filtered_data.rename(columns=dynamic_col_names, inplace=True)
+                # Append the filtered data to plot_data
+                plot_ready = pd.concat([plot_ready.reset_index(drop=True), filtered_data.reset_index(drop=True)],
+                                       axis=1)
+        else:
+            pass
+    return plot_ready
+
+
+# Create a dataset of Cycling values for plotting
+def cyc_dataset(df):
+    return pd.DataFrame({
+        'Cycles': df['Cycle Index'],
+        'Chg. Cap.(mAh)': (df['Chg. Cap.(Ah)'] * 1000).round(4),
+        'DChg. Cap.(mAh)': (df['DChg. Cap.(Ah)'] * 1000).round(4),
+        'Coulomb. Eff.(%)': df['Chg.-DChg. Eff(%)'],
+        'Chg. Spec. Cap.(mAh/g)': df['Chg. Spec. Cap.(mAh/g)'],
+        'DChg. Spec. Cap.(mAh/g)': df['DChg. Spec. Cap.(mAh/g)'],
+        'Cap. Retention(%)': df['Cap. Retention(%)'],
+        'Chg. Spec. Energy(mWh/g)': df['Chg. Spec. Energy(mWh/g)'],
+        'DChg. Spec. Energy(mWh/g)': df['DChg. Spec. Energy(mWh/g)'],
+        'Energy Eff.(%)': df['Energy Eff.(%)']
+    })
+
+
+def export_excel(file_info, df1, df2):
+    if plot_type.get('FMN'):
+        df1.to_excel(f'{file_info['date']}_{file_info['cell_no']}_Formation Data_{file_info['e_w']}g.xlsx',
+                     sheet_name='GCD Data', index=False)
+    elif plot_type.get('CYC'):
+        with pd.ExcelWriter(
+                f'{file_info['date']}_{file_info['cell_no']}_Cycle Life Data_{file_info['e_w']}g_@{file_info['cyc_no']}cycles.xlsx',
+                engine='openpyxl') as writer:
+            df1.to_excel(writer, sheet_name='GCD Data', index=False)
+            df2.to_excel(writer, sheet_name='CYC Data', index=False)
+    else:   pass
+
+
 # Plot function for making plots of a dataframe
 def gcd_plotter(file_info, df):
     num_cols = df.shape[1]  # Total number of columns
@@ -179,7 +252,7 @@ def cyc_gcd_plotter(file_info, df):
     plt.ylabel("Voltage vs. Li/Li$^+$ (V)")
     plt.title(f"Long Cycle GCD - {file_info['cell_no']} - {file_info['e_w']} g - {file_info['cyc_no']} cycles")
     plt.savefig(
-        f'{file_info['date']} {file_info['cell_no']} Long Cycle GCD Plot {file_info['e_w']} g {file_info['cyc_no']} cycles.png',
+        f'{file_info['date']}_{file_info['cell_no']}_Long Cycle GCD Plot_{file_info['e_w']}g_@{file_info['cyc_no']}cycles.png',
         transparent=True,
         dpi=1000)
     plt.legend(loc='lower left', frameon=False, fancybox=False)
@@ -215,69 +288,11 @@ def cyc_plotter(file_info, df):
                fancybox=False)
     plt.title(f"Long Cycling - {file_info['cell_no']} - {file_info['e_w']}g - {file_info['cyc_no']} cycles")
     plt.savefig(
-        f'{file_info['date']} {file_info['cell_no']} Long Cycle Plot {file_info['e_w']}g {file_info['cyc_no']} cycles.png',
+        f'{file_info['date']}_{file_info['cell_no']}_Long Cycle Plot_{file_info['e_w']}g_@{file_info['cyc_no']}cycles.png',
         transparent=True,
         dpi=1000)
     plt.show()
     return
-
-
-def gcd_dataset(df):
-    if plot_type.get('FMN'):
-        cycle_values = df['Cycle Index'].unique()
-    elif plot_type.get('CYC'):
-        cycle_values = [1, 10, 25, 50, 75, 100, 150, 200]
-    else:
-        print("Provided file is neither FMN or CYC")
-        quit()
-
-    step_values = ['CC Chg', 'CC DChg']
-    plot_ready = pd.DataFrame()  # Create an empty dataframe to store results
-
-    # Nested loop: first for 'Cycle Index', then for 'Step Type'
-    for cycle in cycle_values:
-        if cycle in df['Cycle Index'].values:
-            for step in step_values:
-                # Define the filters
-                filters = {
-                    'Cycle Index': cycle,
-                    'Step Type': step
-                }
-                if filters.get('Step Type') == 'CC Chg':
-                    XY = ['Chg. Spec. Cap.(mAh/g)', 'Voltage(V)']
-                    print(f"Cycle {cycle} & {step} found")
-                elif filters.get('Step Type') == 'CC DChg':
-                    XY = ['DChg. Spec. Cap.(mAh/g)', 'Voltage(V)']
-                    print(f"Cycle {cycle} & {step} found")
-                else:
-                    print(f"There are no CC Chg or CC Dchg steps found")
-                    quit()
-
-                # Filter and select data
-                filtered_data = filter_xyz(df, filters, XY)
-                dynamic_col_names = {col: f"Cycle_{cycle}_{step}" for col in filtered_data.columns}
-                filtered_data.rename(columns=dynamic_col_names, inplace=True)
-                # Append the filtered data to plot_data
-                plot_ready = pd.concat([plot_ready.reset_index(drop=True), filtered_data.reset_index(drop=True)],
-                                       axis=1)
-        else:
-            pass
-    return plot_ready
-
-
-def cyc_dataset(df):
-    return pd.DataFrame({
-        'Cycles': df['Cycle Index'],
-        'Chg. Cap.(mAh)': (df['Chg. Cap.(Ah)'] * 1000).round(4),
-        'DChg. Cap.(mAh)': (df['DChg. Cap.(Ah)'] * 1000).round(4),
-        'Coulomb. Eff.(%)': df['Chg.-DChg. Eff(%)'],
-        'Chg. Spec. Cap.(mAh/g)': df['Chg. Spec. Cap.(mAh/g)'],
-        'DChg. Spec. Cap.(mAh/g)': df['DChg. Spec. Cap.(mAh/g)'],
-        'Cap. Retention(%)': df['Cap. Retention(%)'],
-        'Chg. Spec. Energy(mWh/g)': df['Chg. Spec. Energy(mWh/g)'],
-        'DChg. Spec. Energy(mWh/g)': df['DChg. Spec. Energy(mWh/g)'],
-        'Energy Eff.(%)': df['Energy Eff.(%)']
-    })
 
 
 print("Started..")
@@ -294,6 +309,7 @@ for sheet_name, df in work_frames.items():  # Converting each sheet into a separ
 
 gcd_df = gcd_dataset(record)
 cyc_df = cyc_dataset(cycle)
+export_excel(file_info, gcd_df, cyc_df)
 
 if plot_type.get('FMN'):
     print("Formation is being plotted")
@@ -305,4 +321,5 @@ elif plot_type.get('CYC'):
     cyc_plotter(file_info, cyc_df)
     print("Cycle Life GCD is being plotted for 1, 10, 25, 50 and 100 cycles")
     cyc_gcd_plotter(file_info, gcd_df)
+
 print("..Finished")
