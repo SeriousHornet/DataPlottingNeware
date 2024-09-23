@@ -1,34 +1,86 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
-    <list default="true" id="e97ccd28-829f-4212-80e0-8c94728c082d" name="Changes" comment="" />
+    <list default="true" id="e97ccd28-829f-4212-80e0-8c94728c082d" name="Changes" comment="-created a .bat file that will feed all .xlsx files in the root directory. &#10;-file path is no longer hardcoded or requested from user. It is set to sys.argv. The .bat file will provide the file name.">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/MasterPlotter.py" beforeDir="false" afterPath="$PROJECT_DIR$/MasterPlotter.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="export-dfs-to-excel" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 6
-}]]></component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;SeriousHornet&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/SeriousHornet/DataPlottingNeware&quot;,
+    &quot;accountId&quot;: &quot;07944da4-f09c-449f-96cb-c8797f1ab2f5&quot;
+  },
+  &quot;recentNewPullRequestHead&quot;: {
+    &quot;server&quot;: {
+      &quot;useHttp&quot;: false,
+      &quot;host&quot;: &quot;github.com&quot;,
+      &quot;port&quot;: null,
+      &quot;suffix&quot;: null
+    },
+    &quot;owner&quot;: &quot;SeriousHornet&quot;,
+    &quot;repository&quot;: &quot;DataPlottingNeware&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6
+}</component>
   <component name="ProjectId" id="2m8hVUOIkoygKFKWqdNiRBhMHi5" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "master"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.MasterPlotter.executor&quot;: &quot;Run&quot;,
+    &quot;Python.init.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Mano-BRCGE/OneDriveMCUT/Coding/Python/DataPlottingNeware/DataPlottingNeware&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.keymap&quot;
   }
-}]]></component>
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Mano-BRCGE\OneDriveMCUT\Coding\Python\DataPlottingNeware\DataPlottingNeware" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Mano-BRCGE\OneDriveMCUT\Coding\Python\DataPlottingNeware\DataPlottingNeware" />
+    </key>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-98f27166c754-ba05f1cad1b1-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-242.21829.153" />
+        <option value="bundled-python-sdk-884f5ed5d46b-c546a90a8094-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-242.22855.92" />
       </set>
     </attachedChunks>
   </component>
@@ -41,6 +93,183 @@
       <option name="presentableId" value="Default" />
       <updated>1726464133566</updated>
     </task>
+    <task id="LOCAL-00001" summary="initial commit">
+      <option name="closed" value="true" />
+      <created>1726464360794</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1726464360794</updated>
+    </task>
+    <task id="LOCAL-00002" summary="rewriting Xiao code to adapt to Neware code">
+      <option name="closed" value="true" />
+      <created>1726467610920</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1726467610920</updated>
+    </task>
+    <task id="LOCAL-00003" summary="rewriting Xiao code to adapt to Neware code">
+      <option name="closed" value="true" />
+      <created>1726474511046</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1726474511046</updated>
+    </task>
+    <task id="LOCAL-00004" summary="added a filter to only convert the needed sheets into dataframes">
+      <option name="closed" value="true" />
+      <created>1726474560403</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1726474560403</updated>
+    </task>
+    <task id="LOCAL-00005" summary="successfully applied cycle and step filters and retrieve filtered data into a new dataframe ('plot_data')">
+      <option name="closed" value="true" />
+      <created>1726478535237</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1726478535237</updated>
+    </task>
+    <task id="LOCAL-00006" summary="successfully applied cycle and step filters and retrieve filtered data into a new dataframe ('plot_data')">
+      <option name="closed" value="true" />
+      <created>1726478567794</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1726478567794</updated>
+    </task>
+    <task id="LOCAL-00007" summary="properly applied filters based on Step Type. Now only Chg vs Vol. or DChg vs Vol. columns are extracted for further usage.">
+      <option name="closed" value="true" />
+      <created>1726640380097</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1726640380097</updated>
+    </task>
+    <task id="LOCAL-00008" summary="successfully created 'plot_data' dataframe that contains multiple XYs of Cap. vs. Volt. for each cycle's charge and discharge.">
+      <option name="closed" value="true" />
+      <created>1726705250595</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1726705250595</updated>
+    </task>
+    <task id="LOCAL-00009" summary="FMN or CYC auto detection and auto plotting done.">
+      <option name="closed" value="true" />
+      <created>1726726236201</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1726726236201</updated>
+    </task>
+    <task id="LOCAL-00010" summary="gcd_dataset, cyc_dataset, gcd_plotter and cyc_plotter is done.">
+      <option name="closed" value="true" />
+      <created>1726736648398</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1726736648398</updated>
+    </task>
+    <task id="LOCAL-00011" summary="working on creating cyc_gcd_plotter since it requires different labeling system compared to FMN gcd plotting.">
+      <option name="closed" value="true" />
+      <created>1726737051366</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1726737051366</updated>
+    </task>
+    <task id="LOCAL-00012" summary="-long cycle files now produce cycle vs cap. &amp; CE plots and a gcd plot of cycles 1, 10, 25, 50, 100 cycles.&#10;&#10;- reformated all lines and cleaned up obsolete code, moved to old_code.py">
+      <option name="closed" value="true" />
+      <created>1726798463189</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1726798463189</updated>
+    </task>
+    <task id="LOCAL-00013" summary="initial commit">
+      <option name="closed" value="true" />
+      <created>1726799220566</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1726799220566</updated>
+    </task>
+    <task id="LOCAL-00014" summary="-all plots now export their respective Excel files">
+      <option name="closed" value="true" />
+      <created>1726808132917</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1726808132917</updated>
+    </task>
+    <task id="LOCAL-00015" summary="-if file name doesn't contain &quot;FMN&quot; or &quot;CYC&quot; the code quits now.">
+      <option name="closed" value="true" />
+      <created>1726808194432</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1726808194432</updated>
+    </task>
+    <task id="LOCAL-00016" summary="-reformatted code">
+      <option name="closed" value="true" />
+      <created>1726808283941</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1726808283941</updated>
+    </task>
+    <task id="LOCAL-00017" summary="-created a .bat file that will feed all .xlsx files in the root directory. &#10;-file path is no longer hardcoded or requested from user. It is set to sys.argv. The .bat file will provide the file name.">
+      <option name="closed" value="true" />
+      <created>1726811146665</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1726811146665</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="OPEN_GENERIC_TABS">
+      <map>
+        <entry key="a6d74635-70a4-4788-8923-822259e5cc84" value="EDITOR" />
+      </map>
+    </option>
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+        <entry key="a6d74635-70a4-4788-8923-822259e5cc84">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
+    <MESSAGE value="added a filter to select only the needed sheets to be converted into dataframes" />
+    <MESSAGE value="rewriting Xiao code to adapt to Neware code" />
+    <MESSAGE value="added a filter to only convert the needed sheets into dataframes" />
+    <MESSAGE value="successfully applied cycle and step filters and retrieve filtered data into a new dataframe ('plot_data')" />
+    <MESSAGE value="properly applied filters based on Step Type. Now only Chg vs Vol. or DChg vs Vol. columns are extracted for further usage." />
+    <MESSAGE value="successfully created 'plot_data' dataframe that contains multiple XYs of Cap. vs. Volt. for each cycle's charge and discharge." />
+    <MESSAGE value="FMN or CYC auto detection and auto plotting done." />
+    <MESSAGE value="gcd_dataset, cyc_dataset, gcd_plotter and cyc_plotter is done." />
+    <MESSAGE value="working on creating cyc_gcd_plotter since it requires different labeling system compared to FMN gcd plotting." />
+    <MESSAGE value="-long cycle files now produce cycle vs cap. &amp; CE plots and a gcd plot of cycles 1, 10, 25, 50, 100 cycles.&#10;&#10;- reformated all lines and cleaned up obsolete code, moved to old_code.py" />
+    <MESSAGE value="initial commit" />
+    <MESSAGE value="-all plots now export their respective Excel files" />
+    <MESSAGE value="-if file name doesn't contain &quot;FMN&quot; or &quot;CYC&quot; the code quits now." />
+    <MESSAGE value="-reformatted code" />
+    <MESSAGE value="-created a .bat file that will feed all .xlsx files in the root directory. &#10;-file path is no longer hardcoded or requested from user. It is set to sys.argv. The .bat file will provide the file name." />
+    <option name="LAST_COMMIT_MESSAGE" value="-created a .bat file that will feed all .xlsx files in the root directory. &#10;-file path is no longer hardcoded or requested from user. It is set to sys.argv. The .bat file will provide the file name." />
   </component>
 </project>

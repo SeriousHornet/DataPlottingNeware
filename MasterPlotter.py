@@ -14,8 +14,8 @@ pd.options.mode.chained_assignment = None
 
 # To parse file information from file's path
 def file():
-    # raw_path = input("Enter the path of the file: ")
-    raw_path = sys.argv[1]
+    raw_path = input("Enter the path of the file: ")
+    # raw_path = sys.argv[1]
     file_path = raw_path.strip(' " " ')
     filename = str(os.path.basename(file_path))
     file.file_path = file_path
@@ -116,9 +116,9 @@ def gcd_dataset(df):
     if plot_type.get('FMN'):
         cycle_values = df['Cycle Index'].unique()
     elif plot_type.get('CYC'):
-        cycle_values = [1, 10, 25, 50, 75, 100, 150, 200]
+        cycle_values = [1, 10, 50, 100, 200]
     else:
-        print("Provided file is neither FMN or CYC")
+        print("Provided file is neither FMN nor CYC")
         quit()
 
     step_values = ['CC Chg', 'CC DChg']
@@ -173,11 +173,11 @@ def cyc_dataset(df):
 
 def export_excel(file_info, df1, df2):
     if plot_type.get('FMN'):
-        df1.to_excel(f'{file_info['date']}_{file_info['cell_no']}_Formation Data_{file_info['e_w']}g.xlsx',
+        df1.to_excel(f"{file_info['date']}_{file_info['cell_no']}_Formation Data_{file_info['e_w']}g.xlsx",
                      sheet_name='GCD Data', index=False)
     elif plot_type.get('CYC'):
         with pd.ExcelWriter(
-                f'{file_info['date']}_{file_info['cell_no']}_Cycle Life Data_{file_info['e_w']}g_@{file_info['cyc_no']}cycles.xlsx',
+                f"{file_info['date']}_{file_info['cell_no']}_Cycle Life Data_{file_info['e_w']}g_@{file_info['cyc_no']}cycles.xlsx",
                 engine='openpyxl') as writer:
             df1.to_excel(writer, sheet_name='GCD Data', index=False)
             df2.to_excel(writer, sheet_name='CYC Data', index=False)
@@ -214,7 +214,7 @@ def gcd_plotter(file_info, df):
     plt.xlabel("Specific Capacity (mA h $g^{-1}$)")
     plt.ylabel("Voltage vs. Li/Li$^+$ (V)")
     plt.title(f"Formation GCD - {file_info['cell_no']} - {file_info['e_w']} g")
-    plt.savefig(f'{file_info['date']}_{file_info['cell_no']}_FMN_GCD_Plot_{file_info['e_w']}g.png',
+    plt.savefig(f"{file_info['date']}_{file_info['cell_no']}_FMN_GCD_Plot_{file_info['e_w']}g.png",
                 transparent=True,
                 dpi=1000)
     plt.legend(loc='lower left', frameon=False, fancybox=False)
@@ -228,8 +228,8 @@ def cyc_gcd_plotter(file_info, df):
 
     # Define a colormap with distinct colors for each cycle
     colors = plt.get_cmap('tab10', num_cycles)
-    # labels = cycle(['Cycle 1', 'Cycle 10', 'Cycle 25', 'Cycle 50', 'Cycle 100'])
-    labels = ['1', '10', '25', '50', '100']
+    # labels = cycle(['Cycle 1', 'Cycle 10', 'Cycle 50', 'Cycle 100'])
+    labels = ['1', '10', '50', '100', '200']
 
     for i in range(num_cycles):
         # Get the indices for each XY pair of the cycle
@@ -251,7 +251,7 @@ def cyc_gcd_plotter(file_info, df):
     plt.ylabel("Voltage vs. Li/Li$^+$ (V)")
     plt.title(f"Long Cycle GCD - {file_info['cell_no']} - {file_info['e_w']} g - {file_info['cyc_no']} cycles")
     plt.savefig(
-        f'{file_info['date']}_{file_info['cell_no']}_Long Cycle GCD Plot_{file_info['e_w']}g_@{file_info['cyc_no']}cycles.png',
+        f"{file_info['date']}_{file_info['cell_no']}_Long Cycle GCD Plot_{file_info['e_w']}g_@{file_info['cyc_no']}cycles.png",
         transparent=True,
         dpi=1000)
     plt.legend(loc='lower left', frameon=False, fancybox=False)
@@ -287,7 +287,7 @@ def cyc_plotter(file_info, df):
                fancybox=False)
     plt.title(f"Long Cycling - {file_info['cell_no']} - {file_info['e_w']}g - {file_info['cyc_no']} cycles")
     plt.savefig(
-        f'{file_info['date']}_{file_info['cell_no']}_Long Cycle Plot_{file_info['e_w']}g_@{file_info['cyc_no']}cycles.png',
+        f"{file_info['date']}_{file_info['cell_no']}_Long Cycle Plot_{file_info['e_w']}g_@{file_info['cyc_no']}cycles.png",
         transparent=True,
         dpi=1000)
     plt.show()
@@ -318,7 +318,7 @@ elif plot_type.get('RPF'):
 elif plot_type.get('CYC'):
     print("Cycle Life is being plotted")
     cyc_plotter(file_info, cyc_df)
-    print("Cycle Life GCD is being plotted for 1, 10, 25, 50 and 100 cycles")
+    print("Cycle Life GCD is being plotted for selected cycles")
     cyc_gcd_plotter(file_info, gcd_df)
 
 print("..Finished")
