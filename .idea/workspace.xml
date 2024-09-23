@@ -4,10 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e97ccd28-829f-4212-80e0-8c94728c082d" name="Changes" comment="-edited the number of cycles to plot&#10;-reformatted f strings to use double quotes">
+    <list default="true" id="e97ccd28-829f-4212-80e0-8c94728c082d" name="Changes" comment="- pyplot now saves fig inside output dir as well.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MasterPlotter.py" beforeDir="false" afterPath="$PROJECT_DIR$/MasterPlotter.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run.bat" beforeDir="false" afterPath="$PROJECT_DIR$/run.bat" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -62,7 +61,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "Batch.run.executor": "Run",
+    "Batch.run.executor": "Debug",
     "Python.MasterPlotter.executor": "Run",
     "Python.init.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
@@ -239,7 +238,23 @@
       <option name="project" value="LOCAL" />
       <updated>1727061471195</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="-.bat file now creates a folder called &quot;Plot Data&quot; and exports the output file to it.&#10;&#10;-every plot fn now clears the fig memory before and closes the figure after done plotting">
+      <option name="closed" value="true" />
+      <created>1727063755184</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1727063755184</updated>
+    </task>
+    <task id="LOCAL-00020" summary="- pyplot now saves fig inside output dir as well.">
+      <option name="closed" value="true" />
+      <created>1727065116473</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1727065116473</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -281,6 +296,8 @@
     <MESSAGE value="-reformatted code" />
     <MESSAGE value="-created a .bat file that will feed all .xlsx files in the root directory. &#10;-file path is no longer hardcoded or requested from user. It is set to sys.argv. The .bat file will provide the file name." />
     <MESSAGE value="-edited the number of cycles to plot&#10;-reformatted f strings to use double quotes" />
-    <option name="LAST_COMMIT_MESSAGE" value="-edited the number of cycles to plot&#10;-reformatted f strings to use double quotes" />
+    <MESSAGE value="-.bat file now creates a folder called &quot;Plot Data&quot; and exports the output file to it.&#10;&#10;-every plot fn now clears the fig memory before and closes the figure after done plotting" />
+    <MESSAGE value="- pyplot now saves fig inside output dir as well." />
+    <option name="LAST_COMMIT_MESSAGE" value="- pyplot now saves fig inside output dir as well." />
   </component>
 </project>
