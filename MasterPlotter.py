@@ -14,8 +14,8 @@ pd.options.mode.chained_assignment = None
 
 # To parse file information from file's path
 def file():
-    raw_path = input("Enter the path of the file: ")
-    # raw_path = sys.argv[1]
+    # raw_path = input("Enter the path of the file: ")
+    raw_path = sys.argv[1]
     file_path = raw_path.strip(' " " ')
     filename = str(os.path.basename(file_path))
     file.file_path = file_path
@@ -172,17 +172,18 @@ def cyc_dataset(df):
 
 
 def export_excel(file_info, df1, df2):
+    output_dir = sys.argv[2]
     if plot_type.get('FMN'):
-        df1.to_excel(f"{file_info['date']}_{file_info['cell_no']}_Formation Data_{file_info['e_w']}g.xlsx",
-                     sheet_name='GCD Data', index=False)
+        output_file = os.path.join(output_dir, f"{file_info['date']}_{file_info['cell_no']}_Formation Data_{file_info['e_w']}g.xlsx")
+        df1.to_excel(output_file, sheet_name='GCD Data', index=False)
     elif plot_type.get('CYC'):
-        with pd.ExcelWriter(
-                f"{file_info['date']}_{file_info['cell_no']}_Cycle Life Data_{file_info['e_w']}g_@{file_info['cyc_no']}cycles.xlsx",
-                engine='openpyxl') as writer:
+        output_file = os.path.join(output_dir, f"{file_info['date']}_{file_info['cell_no']}_Cycle Life Data_{file_info['e_w']}g_@{file_info['cyc_no']}cycles.xlsx")
+        with pd.ExcelWriter(output_file, engine='openpyxl') as writer:
             df1.to_excel(writer, sheet_name='GCD Data', index=False)
             df2.to_excel(writer, sheet_name='CYC Data', index=False)
     else:
-        quit()
+        print("Error: Invalid plot type.")
+        return
 
 
 # Plot function for making plots of a dataframe
@@ -194,7 +195,7 @@ def gcd_plotter(file_info, df):
     colors = plt.get_cmap('tab10', num_cycles)
     # colors = ['k', 'r', 'b']
 
-    # plt.figure(figsize=(10, 6))
+    plt.clf()
     for i in range(num_cycles):
         # Get the indices for each XY pair of the cycle
         X1, Y1 = df.iloc[:, 4 * i], df.iloc[:, 4 * i + 1]
@@ -218,7 +219,8 @@ def gcd_plotter(file_info, df):
                 transparent=True,
                 dpi=1000)
     plt.legend(loc='lower left', frameon=False, fancybox=False)
-    plt.show()
+    # plt.show()
+    plt.close()
 
 
 # Plot function for long cycle GCD plots
@@ -231,6 +233,7 @@ def cyc_gcd_plotter(file_info, df):
     # labels = cycle(['Cycle 1', 'Cycle 10', 'Cycle 50', 'Cycle 100'])
     labels = ['1', '10', '50', '100', '200']
 
+    plt.clf()
     for i in range(num_cycles):
         # Get the indices for each XY pair of the cycle
         X1, Y1 = df.iloc[:, 4 * i], df.iloc[:, 4 * i + 1]
@@ -255,11 +258,13 @@ def cyc_gcd_plotter(file_info, df):
         transparent=True,
         dpi=1000)
     plt.legend(loc='lower left', frameon=False, fancybox=False)
-    plt.show()
+    # plt.show()
+    plt.close()
 
 
 # Plot function for cycle life plots
 def cyc_plotter(file_info, df):
+    plt.clf()
     fig, ax1 = plt.subplots()
     ax1.set_xlabel("Cycles")
     ax1.set_ylabel("Specific discharge capacity (mA h $g^{-1}$)", color='blue')
@@ -290,7 +295,8 @@ def cyc_plotter(file_info, df):
         f"{file_info['date']}_{file_info['cell_no']}_Long Cycle Plot_{file_info['e_w']}g_@{file_info['cyc_no']}cycles.png",
         transparent=True,
         dpi=1000)
-    plt.show()
+    # plt.show()
+    plt.close()
     return
 
 

@@ -4,9 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e97ccd28-829f-4212-80e0-8c94728c082d" name="Changes" comment="-created a .bat file that will feed all .xlsx files in the root directory. &#10;-file path is no longer hardcoded or requested from user. It is set to sys.argv. The .bat file will provide the file name.">
+    <list default="true" id="e97ccd28-829f-4212-80e0-8c94728c082d" name="Changes" comment="-edited the number of cycles to plot&#10;-reformatted f strings to use double quotes">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MasterPlotter.py" beforeDir="false" afterPath="$PROJECT_DIR$/MasterPlotter.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/run.bat" beforeDir="false" afterPath="$PROJECT_DIR$/run.bat" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -59,16 +60,17 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Python.MasterPlotter.executor&quot;: &quot;Run&quot;,
-    &quot;Python.init.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/Mano-BRCGE/OneDriveMCUT/Coding/Python/DataPlottingNeware/DataPlottingNeware&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.keymap&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Batch.run.executor": "Run",
+    "Python.MasterPlotter.executor": "Run",
+    "Python.init.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "C:/Users/Mano-BRCGE/OneDriveMCUT/Coding/Python/DataPlottingNeware/DataPlottingNeware",
+    "settings.editor.selected.configurable": "preferences.keymap"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\Mano-BRCGE\OneDriveMCUT\Coding\Python\DataPlottingNeware\DataPlottingNeware" />
@@ -229,7 +231,15 @@
       <option name="project" value="LOCAL" />
       <updated>1726811146665</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="-edited the number of cycles to plot&#10;-reformatted f strings to use double quotes">
+      <option name="closed" value="true" />
+      <created>1727061471195</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1727061471195</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -270,6 +280,7 @@
     <MESSAGE value="-if file name doesn't contain &quot;FMN&quot; or &quot;CYC&quot; the code quits now." />
     <MESSAGE value="-reformatted code" />
     <MESSAGE value="-created a .bat file that will feed all .xlsx files in the root directory. &#10;-file path is no longer hardcoded or requested from user. It is set to sys.argv. The .bat file will provide the file name." />
-    <option name="LAST_COMMIT_MESSAGE" value="-created a .bat file that will feed all .xlsx files in the root directory. &#10;-file path is no longer hardcoded or requested from user. It is set to sys.argv. The .bat file will provide the file name." />
+    <MESSAGE value="-edited the number of cycles to plot&#10;-reformatted f strings to use double quotes" />
+    <option name="LAST_COMMIT_MESSAGE" value="-edited the number of cycles to plot&#10;-reformatted f strings to use double quotes" />
   </component>
 </project>
