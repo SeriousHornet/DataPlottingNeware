@@ -171,13 +171,14 @@ def cyc_dataset(df):
     })
 
 
-def export_excel(file_info, df1, df2):
-    output_dir = sys.argv[2]
+def export_excel(file_info, df1, df2, output_dir):
     if plot_type.get('FMN'):
-        output_file = os.path.join(output_dir, f"{file_info['date']}_{file_info['cell_no']}_Formation Data_{file_info['e_w']}g.xlsx")
+        output_file = os.path.join(output_dir,
+                                   f"{file_info['date']}_{file_info['cell_no']}_Formation Data_{file_info['e_w']}g.xlsx")
         df1.to_excel(output_file, sheet_name='GCD Data', index=False)
     elif plot_type.get('CYC'):
-        output_file = os.path.join(output_dir, f"{file_info['date']}_{file_info['cell_no']}_Cycle Life Data_{file_info['e_w']}g_@{file_info['cyc_no']}cycles.xlsx")
+        output_file = os.path.join(output_dir,
+                                   f"{file_info['date']}_{file_info['cell_no']}_Cycle Life Data_{file_info['e_w']}g_@{file_info['cyc_no']}cycles.xlsx")
         with pd.ExcelWriter(output_file, engine='openpyxl') as writer:
             df1.to_excel(writer, sheet_name='GCD Data', index=False)
             df2.to_excel(writer, sheet_name='CYC Data', index=False)
@@ -187,7 +188,7 @@ def export_excel(file_info, df1, df2):
 
 
 # Plot function for making plots of a dataframe
-def gcd_plotter(file_info, df):
+def gcd_plotter(file_info, df, output_dir):
     num_cols = df.shape[1]  # Total number of columns
     num_cycles = num_cols // 4  # Each cycle has 4 columns (2 XY pairs)
 
@@ -215,16 +216,15 @@ def gcd_plotter(file_info, df):
     plt.xlabel("Specific Capacity (mA h $g^{-1}$)")
     plt.ylabel("Voltage vs. Li/Li$^+$ (V)")
     plt.title(f"Formation GCD - {file_info['cell_no']} - {file_info['e_w']} g")
-    plt.savefig(f"{file_info['date']}_{file_info['cell_no']}_FMN_GCD_Plot_{file_info['e_w']}g.png",
-                transparent=True,
-                dpi=1000)
+    output_file = os.path.join(output_dir, f"{file_info['date']}_{file_info['cell_no']}_FMN_GCD_Plot_{file_info['e_w']}g.png")
+    plt.savefig(output_file, transparent=True, dpi=1000)
     plt.legend(loc='lower left', frameon=False, fancybox=False)
     # plt.show()
     plt.close()
 
 
 # Plot function for long cycle GCD plots
-def cyc_gcd_plotter(file_info, df):
+def cyc_gcd_plotter(file_info, df, output_dir):
     num_cols = df.shape[1]  # Total number of columns
     num_cycles = num_cols // 4  # Each cycle has 4 columns (2 XY pairs)
 
@@ -253,17 +253,15 @@ def cyc_gcd_plotter(file_info, df):
     plt.xlabel("Specific Capacity (mA h $g^{-1}$)")
     plt.ylabel("Voltage vs. Li/Li$^+$ (V)")
     plt.title(f"Long Cycle GCD - {file_info['cell_no']} - {file_info['e_w']} g - {file_info['cyc_no']} cycles")
-    plt.savefig(
-        f"{file_info['date']}_{file_info['cell_no']}_Long Cycle GCD Plot_{file_info['e_w']}g_@{file_info['cyc_no']}cycles.png",
-        transparent=True,
-        dpi=1000)
+    output_file = os.path.join(output_dir, f"{file_info['date']}_{file_info['cell_no']}_Long Cycle GCD Plot_{file_info['e_w']}g_@{file_info['cyc_no']}cycles.png")
+    plt.savefig(output_file, transparent=True, dpi=1000)
     plt.legend(loc='lower left', frameon=False, fancybox=False)
     # plt.show()
     plt.close()
 
 
 # Plot function for cycle life plots
-def cyc_plotter(file_info, df):
+def cyc_plotter(file_info, df, output_dir):
     plt.clf()
     fig, ax1 = plt.subplots()
     ax1.set_xlabel("Cycles")
@@ -291,10 +289,8 @@ def cyc_plotter(file_info, df):
                frameon=False,
                fancybox=False)
     plt.title(f"Long Cycling - {file_info['cell_no']} - {file_info['e_w']}g - {file_info['cyc_no']} cycles")
-    plt.savefig(
-        f"{file_info['date']}_{file_info['cell_no']}_Long Cycle Plot_{file_info['e_w']}g_@{file_info['cyc_no']}cycles.png",
-        transparent=True,
-        dpi=1000)
+    output_file = os.path.join(output_dir, f"{file_info['date']}_{file_info['cell_no']}_Long Cycle Plot_{file_info['e_w']}g_@{file_info['cyc_no']}cycles.png")
+    plt.savefig(output_file, transparent=True, dpi=1000)
     # plt.show()
     plt.close()
     return
@@ -303,6 +299,7 @@ def cyc_plotter(file_info, df):
 print("Started..")
 
 file_info = file()
+output_dir = sys.argv[2]
 filename = file_info['filename']
 plot_type = plot_find(filename)
 
@@ -314,17 +311,17 @@ for sheet_name, df in work_frames.items():  # Converting each sheet into a separ
 
 gcd_df = gcd_dataset(record)
 cyc_df = cyc_dataset(cycle)
-export_excel(file_info, gcd_df, cyc_df)
+export_excel(file_info, gcd_df, cyc_df, output_dir)
 
 if plot_type.get('FMN'):
     print("Formation is being plotted")
-    gcd_plotter(file_info, gcd_df)
+    gcd_plotter(file_info, gcd_df, output_dir)
 elif plot_type.get('RPF'):
     print("Rate Profile is being plotted")
 elif plot_type.get('CYC'):
     print("Cycle Life is being plotted")
-    cyc_plotter(file_info, cyc_df)
+    cyc_plotter(file_info, cyc_df, output_dir)
     print("Cycle Life GCD is being plotted for selected cycles")
-    cyc_gcd_plotter(file_info, gcd_df)
+    cyc_gcd_plotter(file_info, gcd_df, output_dir)
 
 print("..Finished")
