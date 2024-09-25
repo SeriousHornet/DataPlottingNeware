@@ -7,6 +7,8 @@ import re
 import warnings
 import sys
 
+from openpyxl.styles.builtins import output
+
 # To avoid errors
 warnings.simplefilter("ignore", category=UserWarning)
 pd.options.mode.chained_assignment = None
@@ -14,8 +16,9 @@ pd.options.mode.chained_assignment = None
 
 # To parse file information from file's path
 def file():
-    # raw_path = input("Enter the path of the file: ")
-    raw_path = sys.argv[1]
+    # raw_path = input("Enter the path of the file:")
+    raw_path = r'"C:\Users\Mano-BRCGE\Desktop\NeWare Data\20240923\240910-C04-C-NCMA90-EC-DEC-0.01091-RPF4.xlsx"'
+    # raw_path = sys.argv[1]
     file_path = raw_path.strip(' " " ')
     filename = str(os.path.basename(file_path))
     file.file_path = file_path
@@ -115,11 +118,13 @@ def plot_find(filename):
 def gcd_dataset(df):
     if plot_type.get('FMN'):
         cycle_values = df['Cycle Index'].unique()
+        print('Data for formation plots are being created')
     elif plot_type.get('CYC'):
         cycle_values = [1, 10, 50, 100, 200]
+        print('Data for cycling plots are being created')
     else:
-        print("Provided file is neither FMN nor CYC")
-        quit()
+        print("Provided file is neither FMN nor CYC, checking RPF")
+        return
 
     step_values = ['CC Chg', 'CC DChg']
     plot_ready = pd.DataFrame()  # Create an empty dataframe to store results
@@ -155,6 +160,47 @@ def gcd_dataset(df):
     return plot_ready
 
 
+def rpf_gcd_dataset(df):
+    if plot_type.get('RPF'):
+        cycle_index = [2, 4, 6, 8, 10, 12, 14]
+        step_index = [2, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34, 37, 39]
+        step_type = ['CC Chg', 'CC DChg']
+
+        # Split step_index into pairs corresponding to each cycle_index
+        step_pairs = [step_index[i:i + 2] for i in range(0, len(step_index), 2)]
+        plot_ready = pd.DataFrame()  # Create an empty dataframe to store results
+        # Iterate through cycle_index and corresponding step_pairs
+        for i, cycle in enumerate(cycle_index):
+            steps = step_pairs[i]
+
+            for step in steps:
+                for st_type in step_type:
+                    filters = {
+                        'Cycle Index': cycle,
+                        'Step Index': step,
+                        'Step Type': st_type
+                    }
+                    if filters.get('Step Type') == 'CC Chg':
+                        XY = ['Chg. Spec. Cap.(mAh/g)', 'Voltage(V)']
+                        print(f"Cycle {cycle}, Step {step} & {st_type} found")
+                    elif filters.get('Step Type') == 'CC DChg':
+                        XY = ['DChg. Spec. Cap.(mAh/g)', 'Voltage(V)']
+                        print(f"Cycle {cycle}, Step {step} & {st_type} found")
+                    else:
+                        pass
+
+                    # Filter and select data
+                    filtered_data = filter_xyz(df, filters, XY)
+                    dynamic_col_names = {col: f"Cycle_{cycle}_Step{step}_{st_type}" for col in filtered_data.columns}
+                    filtered_data.rename(columns=dynamic_col_names, inplace=True)
+                    # Append the filtered data to plot_data
+                    plot_ready = pd.concat([plot_ready.reset_index(drop=True), filtered_data.reset_index(drop=True)],
+                                           axis=1)
+    else:
+        return
+    return plot_ready
+
+
 # Create a dataset of Cycling values for plotting
 def cyc_dataset(df):
     return pd.DataFrame({
@@ -171,7 +217,7 @@ def cyc_dataset(df):
     })
 
 
-def export_excel(file_info, df1, df2, output_dir):
+def export_excel(file_info, df1, df2, df3, output_dir):
     if plot_type.get('FMN'):
         output_file = os.path.join(output_dir,
                                    f"{file_info['date']}_{file_info['cell_no']}_Formation Data_{file_info['e_w']}g.xlsx")
@@ -182,13 +228,19 @@ def export_excel(file_info, df1, df2, output_dir):
         with pd.ExcelWriter(output_file, engine='openpyxl') as writer:
             df1.to_excel(writer, sheet_name='GCD Data', index=False)
             df2.to_excel(writer, sheet_name='CYC Data', index=False)
+    elif plot_type.get('RPF'):
+        output_file = os.path.join(output_dir,
+                                   f"{file_info['date']}_{file_info['cell_no']}_Rate Profile Data_{file_info['e_w']}g.xlsx")
+        with pd.ExcelWriter(output_file, engine='openpyxl') as writer:
+            df3.to_excel(writer, sheet_name='Rate GCD Data', index=False)
+            df2.to_excel(writer, sheet_name='Rate Step Data', index=False)
     else:
         print("Error: Invalid plot type.")
         return
 
 
 # Plot function for making plots of a dataframe
-def gcd_plotter(file_info, df, output_dir):
+def fmn_gcd_plotter(file_info, df, output_dir):
     num_cols = df.shape[1]  # Total number of columns
     num_cycles = num_cols // 4  # Each cycle has 4 columns (2 XY pairs)
 
@@ -203,7 +255,6 @@ def gcd_plotter(file_info, df, output_dir):
         X2, Y2 = df.iloc[:, 4 * i + 2], df.iloc[:, 4 * i + 3]
 
         # Plot both XY pairs for the same cycle in the same color
-        # cycle_color = colors[i % 3]
         cycle_color = colors(i)
         line_thickness = 2.5
 
@@ -216,12 +267,12 @@ def gcd_plotter(file_info, df, output_dir):
     plt.xlabel("Specific Capacity (mA h $g^{-1}$)")
     plt.ylabel("Voltage vs. Li/Li$^+$ (V)")
     plt.title(f"Formation GCD - {file_info['cell_no']} - {file_info['e_w']} g")
-    output_file = os.path.join(output_dir,
-                               f"{file_info['date']}_{file_info['cell_no']}_FMN_GCD_Plot_{file_info['e_w']}g.png")
-    plt.savefig(output_file, transparent=True, dpi=1000)
+    # output_file = os.path.join(output_dir,
+    #                            f"{file_info['date']}_{file_info['cell_no']}_FMN_GCD_Plot_{file_info['e_w']}g.png")
+    # plt.savefig(output_file, transparent=True, dpi=1000)
     plt.legend(loc='lower left', frameon=False, fancybox=False)
-    # plt.show()
-    plt.close()
+    plt.show()
+    # plt.close()
 
 
 # Plot function for long cycle GCD plots
@@ -254,12 +305,12 @@ def cyc_gcd_plotter(file_info, df, output_dir):
     plt.xlabel("Specific Capacity (mA h $g^{-1}$)")
     plt.ylabel("Voltage vs. Li/Li$^+$ (V)")
     plt.title(f"Long Cycle GCD - {file_info['cell_no']} - {file_info['e_w']} g - {file_info['cyc_no']} cycles")
-    output_file = os.path.join(output_dir,
-                               f"{file_info['date']}_{file_info['cell_no']}_Long Cycle GCD Plot_{file_info['e_w']}g_@{file_info['cyc_no']}cycles.png")
-    plt.savefig(output_file, transparent=True, dpi=1000)
+    # output_file = os.path.join(output_dir,
+    #                            f"{file_info['date']}_{file_info['cell_no']}_Long Cycle GCD Plot_{file_info['e_w']}g_@{file_info['cyc_no']}cycles.png")
+    # plt.savefig(output_file, transparent=True, dpi=1000)
     plt.legend(loc='lower left', frameon=False, fancybox=False)
-    # plt.show()
-    plt.close()
+    plt.show()
+    # plt.close()
 
 
 # Plot function for cycle life plots
@@ -291,40 +342,56 @@ def cyc_plotter(file_info, df, output_dir):
                frameon=False,
                fancybox=False)
     plt.title(f"Long Cycling - {file_info['cell_no']} - {file_info['e_w']}g - {file_info['cyc_no']} cycles")
-    output_file = os.path.join(output_dir,
-                               f"{file_info['date']}_{file_info['cell_no']}_Long Cycle Plot_{file_info['e_w']}g_@{file_info['cyc_no']}cycles.png")
-    plt.savefig(output_file, transparent=True, dpi=1000)
-    # plt.show()
-    plt.close()
+    # output_file = os.path.join(output_dir,
+    #                            f"{file_info['date']}_{file_info['cell_no']}_Long Cycle Plot_{file_info['e_w']}g_@{file_info['cyc_no']}cycles.png")
+    # plt.savefig(output_file, transparent=True, dpi=1000)
+    plt.show()
+    # plt.close()
     return
 
 
 print("Started..")
+print('Step 1')
 
 file_info = file()
-output_dir = sys.argv[2]
+# print('Parsed file path and stored file details to file_info')
+
+# output_dir = sys.argv[2]
 filename = file_info['filename']
+# print('Retrieved file name from file_info to filename')
+
 plot_type = plot_find(filename)
+# print('Identified file type and assigned respective plot type')
 
 sheets4plot = ['cycle', 'step', 'record']  # the actual sheets I'm interested in the Excel file
 
-work_frames = parse_excel(file.file_path, sheets4plot)  # Trims the dataframe to only the selected sheets
+work_frames = parse_excel(file.file_path, sheets4plot)
+# print('Parsed excel file and stored necessary data in a dict')  # Trims the dataframe to only the selected sheets
+
 for sheet_name, df in work_frames.items():  # Converting each sheet into a separate dataframes
-    globals()[sheet_name] = df  # Creates a global variable with the name of the sheet
+    globals()[sheet_name] = df  # Creates a global variable with the name of the sheets.
+# print('Converted each sheet into a separate dataframe')
 
-gcd_df = gcd_dataset(record)
 cyc_df = cyc_dataset(cycle)
-export_excel(file_info, gcd_df, cyc_df, output_dir)
+gcd_df = gcd_dataset(record)
+rpf_df = rpf_gcd_dataset(record)
 
+# export_excel(file_info, gcd_df, cyc_df, rpf_df, output_dir)
+output_dir = None
 if plot_type.get('FMN'):
-    print("Formation is being plotted")
-    gcd_plotter(file_info, gcd_df, output_dir)
-elif plot_type.get('RPF'):
-    print("Rate Profile is being plotted")
-elif plot_type.get('CYC'):
-    print("Cycle Life is being plotted")
+    print("Formation GCD data is being plotted")
+    fmn_gcd_plotter(file_info, gcd_df, output_dir)
+    print("Formation cycle data is being plotted")
     cyc_plotter(file_info, cyc_df, output_dir)
-    print("Cycle Life GCD is being plotted for selected cycles")
+elif plot_type.get('RPF'):
+    print("Rate Profile GCD data is being plotted")
+    fmn_gcd_plotter(file_info, rpf_df, output_dir)
+    print("Rate Profile Step data is being plotted")
+
+elif plot_type.get('CYC'):
+    print("Cycle Life data is being plotted")
+    cyc_plotter(file_info, cyc_df, output_dir)
+    print("Cycle Life GCD data is being plotted for selected cycles")
     cyc_gcd_plotter(file_info, gcd_df, output_dir)
 
 print("..Finished")
