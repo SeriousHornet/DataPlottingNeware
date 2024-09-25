@@ -14,10 +14,10 @@ warnings.simplefilter("ignore", category=UserWarning)
 pd.options.mode.chained_assignment = None
 
 
-# To parse file information from file's path
+# Parse file information from file's path
 def file():
     # raw_path = input("Enter the path of the file:")
-    raw_path = r'"C:\Users\Mano-BRCGE\Desktop\NeWare Data\20240923\240910-C04-C-NCMA90-EC-DEC-0.01091-RPF4.xlsx"'
+    raw_path = r'"C:\Users\Mano-BRCGE\Desktop\NeWare Data\20240923\240912-C01-C-NCMA90-EC-DEC-0.01098-1C-CYC@191.xlsx"'
     # raw_path = sys.argv[1]
     file_path = raw_path.strip(' " " ')
     filename = str(os.path.basename(file_path))
@@ -56,16 +56,6 @@ def parse_excel(path, sheets):
             else:
                 warnings.warn(f"Warning: Sheet {i} not found in the file.")
     return dataframes
-
-
-# Function to filter and select specific columns
-def filter_xyz(df, filters, XY):
-    filtered_df = df.copy()  # Copy the original DataFrame to avoid modifying it
-    for column, value in filters.items():
-        filtered_df = filtered_df[filtered_df[column] == value]
-    # Select the specified columns
-    selected_df = filtered_df[XY]
-    return selected_df
 
 
 # Get plot choice form user
@@ -121,6 +111,11 @@ def gcd_dataset(df):
         print('Data for formation plots are being created')
     elif plot_type.get('CYC'):
         cycle_values = [1, 10, 50, 100, 200]
+        last_cycle = df['Cycle Index'].iloc[-1]
+        for i in cycle_values:
+            if i not in df['Cycle Index'].values:
+                print(f"{i} not found in the data. Adding last cycle (Cycle {last_cycle}) to the data.")
+                cycle_values.append(last_cycle)
         print('Data for cycling plots are being created')
     else:
         print("Provided file is neither FMN nor CYC, checking RPF")
@@ -160,42 +155,41 @@ def gcd_dataset(df):
     return plot_ready
 
 
+# Create a dataset of rate profile's GCD values for plotting
 def rpf_gcd_dataset(df):
     if plot_type.get('RPF'):
         cycle_index = [2, 4, 6, 8, 10, 12, 14]
-        step_index = [2, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34, 37, 39]
-        step_type = ['CC Chg', 'CC DChg']
+        step_pairs = [[2, 4], [7, 10], [13, 16], [19, 22], [25, 28], [31, 34], [37, 39]]
+        step_type_pairs = ['CC Chg', 'CC DChg']
 
-        # Split step_index into pairs corresponding to each cycle_index
-        step_pairs = [step_index[i:i + 2] for i in range(0, len(step_index), 2)]
         plot_ready = pd.DataFrame()  # Create an empty dataframe to store results
         # Iterate through cycle_index and corresponding step_pairs
         for i, cycle in enumerate(cycle_index):
-            steps = step_pairs[i]
+            steps = step_pairs[i]  # Get the step pairs for this cycle
 
-            for step in steps:
-                for st_type in step_type:
-                    filters = {
-                        'Cycle Index': cycle,
-                        'Step Index': step,
-                        'Step Type': st_type
-                    }
-                    if filters.get('Step Type') == 'CC Chg':
-                        XY = ['Chg. Spec. Cap.(mAh/g)', 'Voltage(V)']
-                        print(f"Cycle {cycle}, Step {step} & {st_type} found")
-                    elif filters.get('Step Type') == 'CC DChg':
-                        XY = ['DChg. Spec. Cap.(mAh/g)', 'Voltage(V)']
-                        print(f"Cycle {cycle}, Step {step} & {st_type} found")
-                    else:
-                        pass
+            for j, step in enumerate(steps):  # j is the index (0 or 1), step is the step index (e.g., 2, 4)
+                st_type = step_type_pairs[j]  # Pick 'CC Chg' for the first step, 'CC DChg' for the second
+                filters = {
+                    'Cycle Index': cycle,
+                    'Step Index': step,
+                    'Step Type': st_type
+                }
+                if st_type == 'CC Chg':
+                    XY = ['Chg. Spec. Cap.(mAh/g)', 'Voltage(V)']
+                    print(f"Cycle {cycle}, Step {step} & {st_type} found")
+                elif st_type == 'CC DChg':
+                    XY = ['DChg. Spec. Cap.(mAh/g)', 'Voltage(V)']
+                    print(f"Cycle {cycle}, Step {step} & {st_type} found")
+                else:
+                    continue
 
-                    # Filter and select data
-                    filtered_data = filter_xyz(df, filters, XY)
-                    dynamic_col_names = {col: f"Cycle_{cycle}_Step{step}_{st_type}" for col in filtered_data.columns}
-                    filtered_data.rename(columns=dynamic_col_names, inplace=True)
-                    # Append the filtered data to plot_data
-                    plot_ready = pd.concat([plot_ready.reset_index(drop=True), filtered_data.reset_index(drop=True)],
-                                           axis=1)
+                # Filter and select data
+                filtered_data = filter_xyz(df, filters, XY)
+                dynamic_col_names = {col: f"Cycle_{cycle}_Step{step}_{st_type}_{col}" for col in filtered_data.columns}
+                filtered_data.rename(columns=dynamic_col_names, inplace=True)
+                # Append the filtered data to plot_data
+                plot_ready = pd.concat([plot_ready.reset_index(drop=True), filtered_data.reset_index(drop=True)],
+                                       axis=1)
     else:
         return
     return plot_ready
@@ -217,47 +211,21 @@ def cyc_dataset(df):
     })
 
 
-def export_excel(file_info, df1, df2, df3, output_dir):
-    if plot_type.get('FMN'):
-        output_file = os.path.join(output_dir,
-                                   f"{file_info['date']}_{file_info['cell_no']}_Formation Data_{file_info['e_w']}g.xlsx")
-        df1.to_excel(output_file, sheet_name='GCD Data', index=False)
-    elif plot_type.get('CYC'):
-        output_file = os.path.join(output_dir,
-                                   f"{file_info['date']}_{file_info['cell_no']}_Cycle Life Data_{file_info['e_w']}g_@{file_info['cyc_no']}cycles.xlsx")
-        with pd.ExcelWriter(output_file, engine='openpyxl') as writer:
-            df1.to_excel(writer, sheet_name='GCD Data', index=False)
-            df2.to_excel(writer, sheet_name='CYC Data', index=False)
-    elif plot_type.get('RPF'):
-        output_file = os.path.join(output_dir,
-                                   f"{file_info['date']}_{file_info['cell_no']}_Rate Profile Data_{file_info['e_w']}g.xlsx")
-        with pd.ExcelWriter(output_file, engine='openpyxl') as writer:
-            df3.to_excel(writer, sheet_name='Rate GCD Data', index=False)
-            df2.to_excel(writer, sheet_name='Rate Step Data', index=False)
-    else:
-        print("Error: Invalid plot type.")
-        return
-
-
 # Plot function for making plots of a dataframe
 def fmn_gcd_plotter(file_info, df, output_dir):
     num_cols = df.shape[1]  # Total number of columns
     num_cycles = num_cols // 4  # Each cycle has 4 columns (2 XY pairs)
-
     # Define a colormap with distinct colors for each cycle
     colors = plt.get_cmap('tab10', num_cycles)
-    # colors = ['k', 'r', 'b']
 
     plt.clf()
     for i in range(num_cycles):
         # Get the indices for each XY pair of the cycle
         X1, Y1 = df.iloc[:, 4 * i], df.iloc[:, 4 * i + 1]
         X2, Y2 = df.iloc[:, 4 * i + 2], df.iloc[:, 4 * i + 3]
-
         # Plot both XY pairs for the same cycle in the same color
         cycle_color = colors(i)
         line_thickness = 2.5
-
         plt.plot(X1, Y1, label=f'Cycle {i + 1}', color=cycle_color, linestyle='-', linewidth=line_thickness)
         plt.plot(X2, Y2, color=cycle_color, linestyle='-', linewidth=line_thickness)
 
@@ -267,6 +235,41 @@ def fmn_gcd_plotter(file_info, df, output_dir):
     plt.xlabel("Specific Capacity (mA h $g^{-1}$)")
     plt.ylabel("Voltage vs. Li/Li$^+$ (V)")
     plt.title(f"Formation GCD - {file_info['cell_no']} - {file_info['e_w']} g")
+    # output_file = os.path.join(output_dir,
+    #                            f"{file_info['date']}_{file_info['cell_no']}_FMN_GCD_Plot_{file_info['e_w']}g.png")
+    # plt.savefig(output_file, transparent=True, dpi=1000)
+    plt.legend(loc='lower left', frameon=False, fancybox=False)
+    plt.show()
+    # plt.close()
+
+
+def rpf_gcd_plotter(file_info, df, output_dir):
+    num_cols = df.shape[1]  # Total number of columns
+    num_cycles = num_cols // 4  # Each cycle has 4 columns (2 XY pairs)
+    # Define a colormap with distinct colors for each cycle
+    colors = plt.get_cmap('tab10', num_cycles)
+    labels = ['0.2 C', '0.5 C', '1 C', '3 C', '5 C', '10 C', '0.2 C']
+
+    plt.clf()
+    for i in range(num_cycles):
+        # Get the indices for each XY pair of the cycle
+        X1, Y1 = df.iloc[:, 4 * i], df.iloc[:, 4 * i + 1]
+        X2, Y2 = df.iloc[:, 4 * i + 2], df.iloc[:, 4 * i + 3]
+
+        # Plot both XY pairs for the same cycle in the same color
+        cycle_color = colors(i)
+        cycle_label = labels[i % len(labels)]
+        line_thickness = 2.5
+
+        plt.plot(X1, Y1, label=cycle_label, color=cycle_color, linestyle='-', linewidth=line_thickness)
+        plt.plot(X2, Y2, color=cycle_color, linestyle='-', linewidth=line_thickness)
+
+    # Customize the plot
+    plt.xlim(left=0)
+    plt.ylim([2.7, 4.4])
+    plt.xlabel("Specific Capacity (mA h $g^{-1}$)")
+    plt.ylabel("Voltage vs. Li/Li$^+$ / (V)")
+    plt.title(f"0.2 C - 10 C - 0.2 C Rate Profile - {file_info['cell_no']} - {file_info['e_w']} g")
     # output_file = os.path.join(output_dir,
     #                            f"{file_info['date']}_{file_info['cell_no']}_FMN_GCD_Plot_{file_info['e_w']}g.png")
     # plt.savefig(output_file, transparent=True, dpi=1000)
@@ -292,7 +295,6 @@ def cyc_gcd_plotter(file_info, df, output_dir):
         X2, Y2 = df.iloc[:, 4 * i + 2], df.iloc[:, 4 * i + 3]
 
         # Plot both XY pairs for the same cycle in the same color
-        # cycle_color = colors[i % 3]
         cycle_color = colors(i)
         line_thickness = 2.5
 
@@ -350,12 +352,44 @@ def cyc_plotter(file_info, df, output_dir):
     return
 
 
+# Function to filter and select specific columns
+def filter_xyz(df, filters, XY):
+    filtered_df = df.copy()  # Copy the original DataFrame to avoid modifying it
+    for column, value in filters.items():
+        filtered_df = filtered_df[filtered_df[column] == value]
+    # Select the specified columns
+    selected_df = filtered_df[XY]
+    return selected_df
+
+
+def export_excel(file_info, df1, df2, df3, output_dir):
+    if plot_type.get('FMN'):
+        output_file = os.path.join(output_dir,
+                                   f"{file_info['date']}_{file_info['cell_no']}_Formation Data_{file_info['e_w']}g.xlsx")
+        df1.to_excel(output_file, sheet_name='GCD Data', index=False)
+    elif plot_type.get('CYC'):
+        output_file = os.path.join(output_dir,
+                                   f"{file_info['date']}_{file_info['cell_no']}_Cycle Life Data_{file_info['e_w']}g_@{file_info['cyc_no']}cycles.xlsx")
+        with pd.ExcelWriter(output_file, engine='openpyxl') as writer:
+            df1.to_excel(writer, sheet_name='GCD Data', index=False)
+            df2.to_excel(writer, sheet_name='CYC Data', index=False)
+    elif plot_type.get('RPF'):
+        output_file = os.path.join(output_dir,
+                                   f"{file_info['date']}_{file_info['cell_no']}_Rate Profile Data_{file_info['e_w']}g.xlsx")
+        with pd.ExcelWriter(output_file, engine='openpyxl') as writer:
+            df3.to_excel(writer, sheet_name='Rate GCD Data', index=False)
+            df2.to_excel(writer, sheet_name='Rate Step Data', index=False)
+    else:
+        print("Error: Invalid plot type.")
+        return
+
+
 print("Started..")
 print('Step 1')
 
 file_info = file()
 # print('Parsed file path and stored file details to file_info')
-
+output_dir = None
 # output_dir = sys.argv[2]
 filename = file_info['filename']
 # print('Retrieved file name from file_info to filename')
@@ -366,7 +400,7 @@ plot_type = plot_find(filename)
 sheets4plot = ['cycle', 'step', 'record']  # the actual sheets I'm interested in the Excel file
 
 work_frames = parse_excel(file.file_path, sheets4plot)
-# print('Parsed excel file and stored necessary data in a dict')  # Trims the dataframe to only the selected sheets
+# print('Parsed Excel file and stored necessary data in a dict')  # Trims the dataframe to only the selected sheets
 
 for sheet_name, df in work_frames.items():  # Converting each sheet into a separate dataframes
     globals()[sheet_name] = df  # Creates a global variable with the name of the sheets.
@@ -377,15 +411,17 @@ gcd_df = gcd_dataset(record)
 rpf_df = rpf_gcd_dataset(record)
 
 # export_excel(file_info, gcd_df, cyc_df, rpf_df, output_dir)
-output_dir = None
+
 if plot_type.get('FMN'):
     print("Formation GCD data is being plotted")
     fmn_gcd_plotter(file_info, gcd_df, output_dir)
     print("Formation cycle data is being plotted")
     cyc_plotter(file_info, cyc_df, output_dir)
+
 elif plot_type.get('RPF'):
+    print(rpf_df)
     print("Rate Profile GCD data is being plotted")
-    fmn_gcd_plotter(file_info, rpf_df, output_dir)
+    rpf_gcd_plotter(file_info, rpf_df, output_dir)
     print("Rate Profile Step data is being plotted")
 
 elif plot_type.get('CYC'):
