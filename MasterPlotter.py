@@ -17,8 +17,8 @@ pd.options.mode.chained_assignment = None
 # Parse file information from file's path
 def file():
     # raw_path = input("Enter the path of the file:")
-    raw_path = r'"C:\Users\Mano-BRCGE\Desktop\NeWare Data\20240923\240912-C01-C-NCMA90-EC-DEC-0.01098-1C-CYC@191.xlsx"'
-    # raw_path = sys.argv[1]
+    # raw_path = r'"C:\Users\Mano-BRCGE\Desktop\NeWare Data\20240923\240912-C01-C-NCMA90-EC-DEC-0.01098-1C-CYC@191.xlsx"'
+    raw_path = sys.argv[1]
     file_path = raw_path.strip(' " " ')
     filename = str(os.path.basename(file_path))
     file.file_path = file_path
@@ -235,12 +235,12 @@ def fmn_gcd_plotter(file_info, df, output_dir):
     plt.xlabel("Specific Capacity (mA h $g^{-1}$)")
     plt.ylabel("Voltage vs. Li/Li$^+$ (V)")
     plt.title(f"Formation GCD - {file_info['cell_no']} - {file_info['e_w']} g")
-    # output_file = os.path.join(output_dir,
-    #                            f"{file_info['date']}_{file_info['cell_no']}_FMN_GCD_Plot_{file_info['e_w']}g.png")
-    # plt.savefig(output_file, transparent=True, dpi=1000)
+    output_file = os.path.join(output_dir,
+                               f"{file_info['date']}_{file_info['cell_no']}_FMN_GCD_Plot_{file_info['e_w']}g.png")
+    plt.savefig(output_file, transparent=True, dpi=1000)
     plt.legend(loc='lower left', frameon=False, fancybox=False)
-    plt.show()
-    # plt.close()
+    # plt.show()
+    plt.close()
 
 
 def rpf_gcd_plotter(file_info, df, output_dir):
@@ -270,12 +270,12 @@ def rpf_gcd_plotter(file_info, df, output_dir):
     plt.xlabel("Specific Capacity (mA h $g^{-1}$)")
     plt.ylabel("Voltage vs. Li/Li$^+$ / (V)")
     plt.title(f"0.2 C - 10 C - 0.2 C Rate Profile - {file_info['cell_no']} - {file_info['e_w']} g")
-    # output_file = os.path.join(output_dir,
-    #                            f"{file_info['date']}_{file_info['cell_no']}_FMN_GCD_Plot_{file_info['e_w']}g.png")
-    # plt.savefig(output_file, transparent=True, dpi=1000)
+    output_file = os.path.join(output_dir,
+                               f"{file_info['date']}_{file_info['cell_no']}_FMN_GCD_Plot_{file_info['e_w']}g.png")
+    plt.savefig(output_file, transparent=True, dpi=1000)
     plt.legend(loc='lower left', frameon=False, fancybox=False)
-    plt.show()
-    # plt.close()
+    # plt.show()
+    plt.close()
 
 
 # Plot function for long cycle GCD plots
@@ -307,12 +307,12 @@ def cyc_gcd_plotter(file_info, df, output_dir):
     plt.xlabel("Specific Capacity (mA h $g^{-1}$)")
     plt.ylabel("Voltage vs. Li/Li$^+$ (V)")
     plt.title(f"Long Cycle GCD - {file_info['cell_no']} - {file_info['e_w']} g - {file_info['cyc_no']} cycles")
-    # output_file = os.path.join(output_dir,
-    #                            f"{file_info['date']}_{file_info['cell_no']}_Long Cycle GCD Plot_{file_info['e_w']}g_@{file_info['cyc_no']}cycles.png")
-    # plt.savefig(output_file, transparent=True, dpi=1000)
+    output_file = os.path.join(output_dir,
+                               f"{file_info['date']}_{file_info['cell_no']}_Long Cycle GCD Plot_{file_info['e_w']}g_@{file_info['cyc_no']}cycles.png")
+    plt.savefig(output_file, transparent=True, dpi=1000)
     plt.legend(loc='lower left', frameon=False, fancybox=False)
-    plt.show()
-    # plt.close()
+    # plt.show()
+    plt.close()
 
 
 # Plot function for cycle life plots
@@ -344,11 +344,11 @@ def cyc_plotter(file_info, df, output_dir):
                frameon=False,
                fancybox=False)
     plt.title(f"Long Cycling - {file_info['cell_no']} - {file_info['e_w']}g - {file_info['cyc_no']} cycles")
-    # output_file = os.path.join(output_dir,
-    #                            f"{file_info['date']}_{file_info['cell_no']}_Long Cycle Plot_{file_info['e_w']}g_@{file_info['cyc_no']}cycles.png")
-    # plt.savefig(output_file, transparent=True, dpi=1000)
-    plt.show()
-    # plt.close()
+    output_file = os.path.join(output_dir,
+                               f"{file_info['date']}_{file_info['cell_no']}_Long Cycle Plot_{file_info['e_w']}g_@{file_info['cyc_no']}cycles.png")
+    plt.savefig(output_file, transparent=True, dpi=1000)
+    # plt.show()
+    plt.close()
     return
 
 
@@ -389,8 +389,8 @@ print('Step 1')
 
 file_info = file()
 # print('Parsed file path and stored file details to file_info')
-output_dir = None
-# output_dir = sys.argv[2]
+# output_dir = None
+output_dir = sys.argv[2]
 filename = file_info['filename']
 # print('Retrieved file name from file_info to filename')
 
@@ -410,7 +410,7 @@ cyc_df = cyc_dataset(cycle)
 gcd_df = gcd_dataset(record)
 rpf_df = rpf_gcd_dataset(record)
 
-# export_excel(file_info, gcd_df, cyc_df, rpf_df, output_dir)
+export_excel(file_info, gcd_df, cyc_df, rpf_df, output_dir)
 
 if plot_type.get('FMN'):
     print("Formation GCD data is being plotted")
@@ -419,10 +419,8 @@ if plot_type.get('FMN'):
     cyc_plotter(file_info, cyc_df, output_dir)
 
 elif plot_type.get('RPF'):
-    print(rpf_df)
     print("Rate Profile GCD data is being plotted")
     rpf_gcd_plotter(file_info, rpf_df, output_dir)
-    print("Rate Profile Step data is being plotted")
 
 elif plot_type.get('CYC'):
     print("Cycle Life data is being plotted")
