@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e97ccd28-829f-4212-80e0-8c94728c082d" name="Changes" comment="- pyplot now saves fig inside output dir as well.">
+    <list default="true" id="e97ccd28-829f-4212-80e0-8c94728c082d" name="Changes" comment="- fixed bug where multiple plots are plotted for rpf profile.&#10;- if the last cycle is not from selected cycles, then the current last cycle is added to the plot">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/MasterPlotter.py" beforeDir="false" afterPath="$PROJECT_DIR$/MasterPlotter.py" afterDir="false" />
     </list>
@@ -23,7 +23,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="export-dfs-to-excel" />
+        <entry key="$PROJECT_DIR$" value="master" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -50,6 +50,9 @@
     &quot;repository&quot;: &quot;DataPlottingNeware&quot;
   }
 }</component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 6
 }</component>
@@ -65,7 +68,7 @@
     "Python.MasterPlotter.executor": "Run",
     "Python.init.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "master",
+    "git-widget-placeholder": "rate-profile-plots",
     "last_opened_file_path": "C:/Users/Mano-BRCGE/OneDriveMCUT/Coding/Python/DataPlottingNeware/DataPlottingNeware",
     "settings.editor.selected.configurable": "preferences.keymap"
   }
@@ -254,7 +257,39 @@
       <option name="project" value="LOCAL" />
       <updated>1727065116473</updated>
     </task>
-    <option name="localTasksCounter" value="21" />
+    <task id="LOCAL-00021" summary="- pyplot now saves fig inside output dir as well.">
+      <option name="closed" value="true" />
+      <created>1727070471405</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1727070471405</updated>
+    </task>
+    <task id="LOCAL-00022" summary="- pyplot now saves fig inside output dir as well.">
+      <option name="closed" value="true" />
+      <created>1727070479942</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1727070479942</updated>
+    </task>
+    <task id="LOCAL-00023" summary="- rate profile gcd for selected cycles are now saved in a df and plotted properly.">
+      <option name="closed" value="true" />
+      <created>1727235712260</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1727235712260</updated>
+    </task>
+    <task id="LOCAL-00024" summary="- fixed bug where multiple plots are plotted for rpf profile.&#10;- if the last cycle is not from selected cycles, then the current last cycle is added to the plot">
+      <option name="closed" value="true" />
+      <created>1727256481532</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1727256481533</updated>
+    </task>
+    <option name="localTasksCounter" value="25" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -298,6 +333,8 @@
     <MESSAGE value="-edited the number of cycles to plot&#10;-reformatted f strings to use double quotes" />
     <MESSAGE value="-.bat file now creates a folder called &quot;Plot Data&quot; and exports the output file to it.&#10;&#10;-every plot fn now clears the fig memory before and closes the figure after done plotting" />
     <MESSAGE value="- pyplot now saves fig inside output dir as well." />
-    <option name="LAST_COMMIT_MESSAGE" value="- pyplot now saves fig inside output dir as well." />
+    <MESSAGE value="- rate profile gcd for selected cycles are now saved in a df and plotted properly." />
+    <MESSAGE value="- fixed bug where multiple plots are plotted for rpf profile.&#10;- if the last cycle is not from selected cycles, then the current last cycle is added to the plot" />
+    <option name="LAST_COMMIT_MESSAGE" value="- fixed bug where multiple plots are plotted for rpf profile.&#10;- if the last cycle is not from selected cycles, then the current last cycle is added to the plot" />
   </component>
 </project>
