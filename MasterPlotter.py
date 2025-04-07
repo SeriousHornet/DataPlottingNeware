@@ -199,8 +199,8 @@ def rpf_gcd_dataset(df):
 def cyc_dataset(df):
     return pd.DataFrame({
         'Cycles': df['Cycle Index'],
-        'Chg. Cap.(mAh)': (df['Chg. Cap.(Ah)'] * 1000).round(4),
-        'DChg. Cap.(mAh)': (df['DChg. Cap.(Ah)'] * 1000).round(4),
+        'Chg. Cap.(mAh)': (df['Chg. Cap.(mAh)']),
+        'DChg. Cap.(mAh)': (df['DChg. Cap.(mAh)']),
         'Coulomb. Eff.(%)': df['Chg.-DChg. Eff(%)'],
         'Chg. Spec. Cap.(mAh/g)': df['Chg. Spec. Cap.(mAh/g)'],
         'DChg. Spec. Cap.(mAh/g)': df['DChg. Spec. Cap.(mAh/g)'],
