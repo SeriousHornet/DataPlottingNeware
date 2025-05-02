@@ -15,10 +15,10 @@ pd.options.mode.chained_assignment = None
 
 
 # Parse file information from file's path
-def file():
+def file(raw_path):
     # raw_path = input("Enter the path of the file:")
     # raw_path = r'"C:\Users\Mano-BRCGE\Desktop\NeWare Data\20240923\240912-C01-C-NCMA90-EC-DEC-0.01098-1C-CYC@191.xlsx"'
-    raw_path = sys.argv[1]
+    # raw_path = sys.argv[1]
     file_path = raw_path.strip(' " " ')
     filename = str(os.path.basename(file_path))
     file.file_path = file_path
@@ -119,7 +119,7 @@ def gcd_dataset(df):
         print('Data for cycling plots are being created')
     else:
         print("Provided file is neither FMN nor CYC, checking RPF")
-        return
+        return None
 
     step_values = ['CC Chg', 'CC DChg']
     plot_ready = pd.DataFrame()  # Create an empty dataframe to store results
@@ -191,9 +191,46 @@ def rpf_gcd_dataset(df):
                 plot_ready = pd.concat([plot_ready.reset_index(drop=True), filtered_data.reset_index(drop=True)],
                                        axis=1)
     else:
-        return
+        return None
     return plot_ready
 
+# Create a dataset of rate profile's step values for plotting
+def rpf_step_dataset(df):
+    if plot_type.get('RPF'):
+        # Filter based on Step Type
+        chg_df = df[df['Step Type'] == 'CC Chg'][['Chg. Cap.(mAh)', 'Chg. Spec. Cap.(mAh/g)']].reset_index(drop=True)
+        dchg_df = df[df['Step Type'] == 'CC DChg'][['DChg. Cap.(mAh)', 'DChg. Spec. Cap.(mAh/g)']].reset_index(
+            drop=True)
+        # Ensure equal length
+        min_len = min(len(chg_df), len(dchg_df))
+        chg_df = chg_df.iloc[:min_len]
+        dchg_df = dchg_df.iloc[:min_len]
+        # Calculate CE%
+        ce_percent = (dchg_df['DChg. Cap.(mAh)'] / chg_df['Chg. Cap.(mAh)']) * 100
+        ce_percent = ce_percent.round(2)
+        # Combine all into final DataFrame
+        result_df = pd.concat([
+            chg_df['Chg. Cap.(mAh)'],
+            dchg_df['DChg. Cap.(mAh)'],
+            ce_percent.rename('CE%'),
+            chg_df['Chg. Spec. Cap.(mAh/g)'],
+            dchg_df['DChg. Spec. Cap.(mAh/g)']
+        ], axis=1)
+        # work_df = pd.DataFrame()  # Create an empty dataframe to store results
+        # step_types = ['CC Chg', 'CC DChg']
+        # for I in step_types:
+        #     if i == 'CC Chg':
+        #         XY = ['Chg. Cap.(mAh)', 'Chg. Spec. Cap.(mAh/g)']
+        #     elif i== 'CC DChg':
+        #         XY = ['DChg. Cap.(mAh)', 'DChg. Spec. Cap.(mAh/g)']
+        #     else:
+        #         continue
+        #     work_df = pd.concat([plot_ready.reset_index(drop=True), XY.reset_index(drop=True)], axis=1)
+        #     work_df['CE%']=plot_ready['Chg. Cap.(mAh)']/plot_ready['DChg. Cap.(mAh)'].round2
+        #     out_df = work_df['Chg. Cap.(mAh)','DChg. Cap.(mAh)','CE%','Chg. Spec. Cap.(mAh/g)','DChg. Spec. Cap.(mAh/g))']
+    else:
+        return None
+    return result_df
 
 # Create a dataset of Cycling values for plotting
 def cyc_dataset(df):
@@ -362,7 +399,7 @@ def filter_xyz(df, filters, XY):
     return selected_df
 
 
-def export_excel(file_info, df1, df2, df3, output_dir):
+def export_excel(file_info, df1, df2, df3, df4, output_dir):
     if plot_type.get('FMN'):
         output_file = os.path.join(output_dir,
                                    f"{file_info['date']}_{file_info['cell_no']}_Formation Data_{file_info['e_w']}g.xlsx")
@@ -378,54 +415,64 @@ def export_excel(file_info, df1, df2, df3, output_dir):
                                    f"{file_info['date']}_{file_info['cell_no']}_Rate Profile Data_{file_info['e_w']}g.xlsx")
         with pd.ExcelWriter(output_file, engine='openpyxl') as writer:
             df3.to_excel(writer, sheet_name='Rate GCD Data', index=False)
-            df2.to_excel(writer, sheet_name='Rate Step Data', index=False)
+            df4.to_excel(writer, sheet_name='Rate Step Data', index=False)
     else:
         print("Error: Invalid plot type.")
         return
 
-
 print("Started..")
-print('Step 1')
 
-file_info = file()
-# print('Parsed file path and stored file details to file_info')
-# output_dir = None
-output_dir = sys.argv[2]
-filename = file_info['filename']
-# print('Retrieved file name from file_info to filename')
+root_dir = os.getcwd()
+output_dir = os.path.join(root_dir, 'Plot Data')
+os.makedirs(output_dir, exist_ok=True)
 
-plot_type = plot_find(filename)
-# print('Identified file type and assigned respective plot type')
+csv_files = [f for f in os.listdir(root_dir) if f.lower().endswith('.xlsx')]
+if not csv_files:
+    print("No .xlsx files found in current directory.")
+    sys.exit(1)
+for f in csv_files:
+    full_path = os.path.join(root_dir, f)
+    print(f"Processing {f}")
+    file_info = file(full_path)
+    # print('Parsed file path and stored file details to file_info')
+    # output_dir = None
+    # output_dir = sys.argv[2]
+    filename = file_info['filename']
+    # print('Retrieved file name from file_info to filename')
 
-sheets4plot = ['cycle', 'step', 'record']  # the actual sheets I'm interested in the Excel file
+    plot_type = plot_find(filename)
+    # print('Identified file type and assigned respective plot type')
 
-work_frames = parse_excel(file.file_path, sheets4plot)
-# print('Parsed Excel file and stored necessary data in a dict')  # Trims the dataframe to only the selected sheets
+    sheets4plot = ['cycle', 'step', 'record']  # the actual sheets I'm interested in the Excel file
 
-for sheet_name, df in work_frames.items():  # Converting each sheet into a separate dataframes
-    globals()[sheet_name] = df  # Creates a global variable with the name of the sheets.
-# print('Converted each sheet into a separate dataframe')
+    work_frames = parse_excel(file.file_path, sheets4plot)
+    # print('Parsed Excel file and stored necessary data in a dict')  # Trims the dataframe to only the selected sheets
 
-cyc_df = cyc_dataset(cycle)
-gcd_df = gcd_dataset(record)
-rpf_df = rpf_gcd_dataset(record)
+    for sheet_name, df in work_frames.items():  # Converting each sheet into a separate dataframes
+        globals()[sheet_name] = df  # Creates a global variable with the name of the sheets.
+    # print('Converted each sheet into a separate dataframe')
 
-export_excel(file_info, gcd_df, cyc_df, rpf_df, output_dir)
+    cyc_df = cyc_dataset(cycle)
+    gcd_df = gcd_dataset(record)
+    rpf_df = rpf_gcd_dataset(record)
+    rpf_step_df = rpf_step_dataset(step)
 
-if plot_type.get('FMN'):
-    print("Formation GCD data is being plotted")
-    fmn_gcd_plotter(file_info, gcd_df, output_dir)
-    print("Formation cycle data is being plotted")
-    cyc_plotter(file_info, cyc_df, output_dir)
+    export_excel(file_info, gcd_df, cyc_df, rpf_df, rpf_step_df, output_dir)
 
-elif plot_type.get('RPF'):
-    print("Rate Profile GCD data is being plotted")
-    rpf_gcd_plotter(file_info, rpf_df, output_dir)
+    if plot_type.get('FMN'):
+        print("Formation GCD data is being plotted")
+        fmn_gcd_plotter(file_info, gcd_df, output_dir)
+        print("Formation cycle data is being plotted")
+        cyc_plotter(file_info, cyc_df, output_dir)
 
-elif plot_type.get('CYC'):
-    print("Cycle Life data is being plotted")
-    cyc_plotter(file_info, cyc_df, output_dir)
-    print("Cycle Life GCD data is being plotted for selected cycles")
-    cyc_gcd_plotter(file_info, gcd_df, output_dir)
+    elif plot_type.get('RPF'):
+        print("Rate Profile GCD data is being plotted")
+        rpf_gcd_plotter(file_info, rpf_df, output_dir)
 
-print("..Finished")
+    elif plot_type.get('CYC'):
+        print("Cycle Life data is being plotted")
+        cyc_plotter(file_info, cyc_df, output_dir)
+        print("Cycle Life GCD data is being plotted for selected cycles")
+        cyc_gcd_plotter(file_info, gcd_df, output_dir)
+
+input("Processing complete. Press Enter to exit...")
