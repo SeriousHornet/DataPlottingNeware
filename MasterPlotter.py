@@ -16,9 +16,6 @@ pd.options.mode.chained_assignment = None
 
 # Parse file information from file's path
 def file(raw_path):
-    # raw_path = input("Enter the path of the file:")
-    # raw_path = r'"C:\Users\Mano-BRCGE\Desktop\NeWare Data\20240923\240912-C01-C-NCMA90-EC-DEC-0.01098-1C-CYC@191.xlsx"'
-    # raw_path = sys.argv[1]
     file_path = raw_path.strip(' " " ')
     filename = str(os.path.basename(file_path))
     file.file_path = file_path
@@ -216,18 +213,6 @@ def rpf_step_dataset(df):
             chg_df['Chg. Spec. Cap.(mAh/g)'],
             dchg_df['DChg. Spec. Cap.(mAh/g)']
         ], axis=1)
-        # work_df = pd.DataFrame()  # Create an empty dataframe to store results
-        # step_types = ['CC Chg', 'CC DChg']
-        # for I in step_types:
-        #     if i == 'CC Chg':
-        #         XY = ['Chg. Cap.(mAh)', 'Chg. Spec. Cap.(mAh/g)']
-        #     elif i== 'CC DChg':
-        #         XY = ['DChg. Cap.(mAh)', 'DChg. Spec. Cap.(mAh/g)']
-        #     else:
-        #         continue
-        #     work_df = pd.concat([plot_ready.reset_index(drop=True), XY.reset_index(drop=True)], axis=1)
-        #     work_df['CE%']=plot_ready['Chg. Cap.(mAh)']/plot_ready['DChg. Cap.(mAh)'].round2
-        #     out_df = work_df['Chg. Cap.(mAh)','DChg. Cap.(mAh)','CE%','Chg. Spec. Cap.(mAh/g)','DChg. Spec. Cap.(mAh/g))']
     else:
         return None
     return result_df
@@ -276,7 +261,6 @@ def fmn_gcd_plotter(file_info, df, output_dir):
                                f"{file_info['date']}_{file_info['cell_no']}_FMN_GCD_Plot_{file_info['e_w']}g.png")
     plt.savefig(output_file, transparent=True, dpi=1000)
     plt.legend(loc='lower left', frameon=False, fancybox=False)
-    # plt.show()
     plt.close()
 
 
@@ -311,7 +295,6 @@ def rpf_gcd_plotter(file_info, df, output_dir):
                                f"{file_info['date']}_{file_info['cell_no']}_FMN_GCD_Plot_{file_info['e_w']}g.png")
     plt.savefig(output_file, transparent=True, dpi=1000)
     plt.legend(loc='lower left', frameon=False, fancybox=False)
-    # plt.show()
     plt.close()
 
 
@@ -322,7 +305,6 @@ def cyc_gcd_plotter(file_info, df, output_dir):
 
     # Define a colormap with distinct colors for each cycle
     colors = plt.get_cmap('tab10', num_cycles)
-    # labels = cycle(['Cycle 1', 'Cycle 10', 'Cycle 50', 'Cycle 100'])
     labels = ['1', '10', '50', '100', '200']
 
     plt.clf()
@@ -348,7 +330,6 @@ def cyc_gcd_plotter(file_info, df, output_dir):
                                f"{file_info['date']}_{file_info['cell_no']}_Long Cycle GCD Plot_{file_info['e_w']}g_@{file_info['cyc_no']}cycles.png")
     plt.savefig(output_file, transparent=True, dpi=1000)
     plt.legend(loc='lower left', frameon=False, fancybox=False)
-    # plt.show()
     plt.close()
 
 
@@ -365,7 +346,6 @@ def cyc_plotter(file_info, df, output_dir):
                          marker='o')
     ax1.tick_params(axis='y', labelcolor='blue')
     ax1.set_ylim(0, 200)
-    # ax1.set_xlim(0, 200)
 
     ax2 = ax1.twinx()
     ax2.set_ylabel("Coulomb. Efficiency (%)", color='red')
@@ -384,7 +364,6 @@ def cyc_plotter(file_info, df, output_dir):
     output_file = os.path.join(output_dir,
                                f"{file_info['date']}_{file_info['cell_no']}_Long Cycle Plot_{file_info['e_w']}g_@{file_info['cyc_no']}cycles.png")
     plt.savefig(output_file, transparent=True, dpi=1000)
-    # plt.show()
     plt.close()
     return
 
@@ -432,25 +411,15 @@ if not csv_files:
     sys.exit(1)
 for f in csv_files:
     full_path = os.path.join(root_dir, f)
-    print(f"Processing {f}")
+    print(f"Processing.. please wait. {f}")
     file_info = file(full_path)
-    # print('Parsed file path and stored file details to file_info')
-    # output_dir = None
-    # output_dir = sys.argv[2]
     filename = file_info['filename']
-    # print('Retrieved file name from file_info to filename')
-
     plot_type = plot_find(filename)
-    # print('Identified file type and assigned respective plot type')
-
     sheets4plot = ['cycle', 'step', 'record']  # the actual sheets I'm interested in the Excel file
-
-    work_frames = parse_excel(file.file_path, sheets4plot)
-    # print('Parsed Excel file and stored necessary data in a dict')  # Trims the dataframe to only the selected sheets
+    work_frames = parse_excel(file.file_path, sheets4plot) # Trims the dataframe to only the selected sheets
 
     for sheet_name, df in work_frames.items():  # Converting each sheet into a separate dataframes
         globals()[sheet_name] = df  # Creates a global variable with the name of the sheets.
-    # print('Converted each sheet into a separate dataframe')
 
     cyc_df = cyc_dataset(cycle)
     gcd_df = gcd_dataset(record)
